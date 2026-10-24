@@ -1,7 +1,0 @@
-notes.hehaizhao.site {
-    reverse_proxy fns:9000
-}
-
-blog.snorlaxden.fun {
-    reverse_proxy snorlaxden-web:3000
-}

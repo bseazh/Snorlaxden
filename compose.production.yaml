@@ -28,15 +28,9 @@ services:
         condition: service_healthy
     networks:
       internal:
-      proxy:
-        aliases:
-          - snorlaxden-web
 
 networks:
   internal:
-  proxy:
-    external: true
-    name: snorlaxden_default
 
 volumes:
   postgres_data:

@@ -93,7 +93,7 @@ AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。按�
 /home/ubuntu/Project/snorlaxden/app
 ```
 
-父目录已经运行 `notes.hehaizhao.site` 的同步服务和 Caddy，因此本项目生产 Web 服务固定绑定 `127.0.0.1:3999`，本地开发仍使用 `3000`。正式访问链路为 `blog.snorlaxden.fun -> Caddy -> snorlaxden-web:3000`；`3999` 只用于服务器本机健康检查。域名接入修改父目录现有 Caddy 配置，不启动第二个公网反向代理。
+服务器已经运行 systemd Caddy，因此本项目生产 Web 服务固定绑定 `127.0.0.1:3999`，本地开发仍使用 `3000`。正式访问链路为 `blog.snorlaxden.fun -> Caddy -> 127.0.0.1:3999`；`3999` 只用于服务器本机健康检查。域名接入将 `infra/Caddyfile.snorlaxden` 合并到服务器现有 `/etc/caddy/Caddyfile`，不覆盖其他站点，也不启动第二个公网反向代理。
 
 生产部署命令：
 
@@ -125,7 +125,7 @@ docs/spec/                   v1.0 产品、架构、模块与验收规格
 compose.yaml                 本地 PostgreSQL
 compose.production.yaml      服务器 Web + PostgreSQL
 Dockerfile                   生产应用镜像
-infra/Caddyfile.server       服务器现有 Caddy 的完整可审计配置
+infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片段
 .env.example                 不含真实密钥的变量模板
 ```
 
