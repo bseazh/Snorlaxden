@@ -1,3 +1,9 @@
+x-logging: &default-logging
+  driver: local
+  options:
+    max-file: "5"
+    max-size: 10m
+
 services:
   db:
     image: mirror.ccs.tencentyun.com/library/postgres:17-alpine@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
@@ -10,6 +16,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    logging: *default-logging
     networks:
       - internal
 
@@ -25,6 +32,7 @@ services:
     networks:
       - internal
     restart: "no"
+    logging: *default-logging
 
   seed:
     build:
@@ -38,6 +46,7 @@ services:
     networks:
       - internal
     restart: "no"
+    logging: *default-logging
 
   web:
     build:
@@ -57,6 +66,7 @@ services:
         condition: service_completed_successfully
     networks:
       internal:
+    logging: *default-logging
 
 networks:
   internal:

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, authenticatedOrPublicMedia } from '../access'
+import { auditCollectionHooks } from '../modules/audit'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -44,6 +45,7 @@ export const Media: CollectionConfig = {
       type: 'textarea',
     },
   ],
+  hooks: auditCollectionHooks('media'),
   upload: {
     adminThumbnail: 'card',
     imageSizes: [

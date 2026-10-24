@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     if (!body.generationId || typeof body.slug !== 'string') {
       throw new AIError('VALIDATION_ERROR', '生成记录和 Slug 均为必填项。', 400)
     }
-    return Response.json(await saveGenerationAsDraft(payload, user, { generationId: body.generationId, slug: body.slug }))
+    return Response.json(await saveGenerationAsDraft(payload, user, { generationId: body.generationId, slug: body.slug }, { headers: request.headers }))
   } catch (error) {
     if (error instanceof AIError) {
       return Response.json({ code: error.code, message: error.message }, { status: error.status })

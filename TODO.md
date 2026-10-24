@@ -96,6 +96,16 @@
 - [x] 参考旧 Hexo/Fluid 视觉语言重做照片封面、导航与文章阅读界面
 - [ ] 验证 T013–T017
 
+### 已完成｜[CHORE-002：统一日志与操作审计](https://github.com/bseazh/Snorlaxden/issues/10)
+
+- [x] 建立根目录 `logs/` 作为日志统一入口
+- [x] 建立进入 Git 的按日期开发日志，保留实现、迁移、测试和部署痕迹
+- [x] 建立 PostgreSQL `audit-logs`，管理员只读且禁止更新/删除
+- [x] 记录登录、AI 调用、限额拒绝、草稿保存和内容状态变更
+- [x] 对 IP 做加盐摘要，禁止保存密钥、Cookie、正文和 AI 原始素材
+- [x] 为 Docker 运行日志增加 10MB x 5 轮转
+- [x] 增加 `pnpm logs:export` JSONL 导出能力
+
 ### 参考实现与采用边界
 
 后续功能优先借鉴本地已有项目，而不是从零设计，但继续保留当前 Next.js + Payload 架构：

@@ -42,6 +42,8 @@ flowchart TB
   ContentModule --> Payload
 
   Payload --> PostgreSQL[(PostgreSQL 17)]
+  Payload --> Audit[(audit-logs / 操作审计)]
+  Audit --> PostgreSQL
   Payload --> Media[Media / Storage Adapter]
   Media --> Local[(当前：Docker media_data)]
   Media -. 后续切换 .-> ObjectStorage[(COS / OSS / S3)]
@@ -116,6 +118,8 @@ pnpm dev:db:down
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | 已配置 |
 | `DEEPSEEK_MODEL` | DeepSeek 模型，可按账号权限调整 | 已配置 |
 | `AI_*_ENABLED` | AI 能力开关 | 模板默认关闭，生产仅启用文本试运行 |
+| `AI_DAILY_LIMIT` | 每位管理员每日 AI 调用上限 | 已使用，默认 20 |
+| `AUDIT_IP_HASH_SALT` | 审计日志 IP 摘要盐 | 已使用，生产必须设置随机值 |
 
 AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化内容。每次调用都会写入仅管理员可见的 `ai-generations` 记录，并按管理员限制每日调用次数（`AI_DAILY_LIMIT`，默认 20）。成功结果只能由管理员点击“保存草稿”后写入 Payload 和 Markdown；系统没有自动发布路径。
 
@@ -165,6 +169,7 @@ docker compose -f compose.production.yaml up -d --build
 |---|---|---|
 | 正式文章 | Payload `posts` | PostgreSQL |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
+| 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
 | 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |
 | 待导入 Markdown | 非权威工作副本 | `content/inbox/`，默认不进 Git |
@@ -196,6 +201,7 @@ src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区
 content/articles/            AI 保存的 Markdown 草稿工作副本
+logs/                        日志统一入口、开发日志与受控运行日志导出
 tests/                       集成测试与端到端测试
 docs/DX.md                   开发、内容、媒体和对象存储标准
 docs/spec/                   v1.0 产品、架构、模块与验收规格
@@ -215,11 +221,18 @@ infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片�
 - 文章和项目只有 `_status=published` 时对访客可见；撤回后详情返回 404。
 - 媒体仅允许 JPEG、PNG、WebP、AVIF，HTTP 上传限制为 10MB，默认私有。
 - AI 只生成草稿，发布必须由管理员确认。
+- 管理员登录、AI 调用、内容创建/修改/发布/撤回/删除写入不可变审计日志。
 - 未获得合法字幕时，视频只能收藏链接、元数据和本人笔记。
 - 数据库不开放公网端口；生产 Web 仅绑定服务器回环地址。
 - 每次 schema 变更必须生成迁移，并提供备份与回滚方案。
 
 完整需求从 [规格入口](docs/spec/README.md) 开始阅读。
+
+## 日志与审计
+
+统一入口见 [日志中心](logs/README.md)。开发过程按日期写入 `logs/development/` 并进入 Git；后台操作写入 PostgreSQL `audit-logs`；Docker 运行日志使用 10MB x 5 的轮转策略。管理员可在 `/admin/collections/audit-logs` 查询，或用 `pnpm logs:export` 导出到被 Git 忽略的 `logs/runtime/`。
+
+审计日志不保存密码、Token、API Key、Cookie、正文或 AI 原始素材。客户端 IP 只保存加盐摘要。
 
 ## 参考项目与演进原则
 

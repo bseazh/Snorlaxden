@@ -7,6 +7,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { AIGenerations } from './collections/AIGenerations'
+import { AuditLogs } from './collections/AuditLogs'
 import { Media } from './collections/Media'
 import { FAQItems } from './collections/FAQItems'
 import { Posts } from './collections/Posts'
@@ -25,7 +26,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Tags, Posts, Projects, FAQItems, AIGenerations],
+  collections: [Users, Media, Tags, Posts, Projects, FAQItems, AIGenerations, AuditLogs],
   globals: [SiteSettings],
   bodyParser: {
     limits: {

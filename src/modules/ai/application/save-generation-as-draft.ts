@@ -1,6 +1,7 @@
 import type { Payload, PayloadRequest } from 'payload'
 
 import { generatedDraftToMarkdown, generatedDraftToRichText, writeArticleMarkdown } from '@/modules/content/article-drafts'
+import { type AuditRequestContext, writeAuditLog } from '@/modules/audit'
 
 import { AIError } from '../domain/types'
 import { readGeneratedDraft } from './generation-service'
@@ -21,6 +22,37 @@ function mapContentType(value: unknown): 'reflection' | 'knowledge' | 'project-n
 }
 
 export async function saveGenerationAsDraft(
+  payload: Payload,
+  user: NonNullable<PayloadRequest['user']>,
+  input: { generationId: number | string; slug: string },
+  request?: AuditRequestContext,
+) {
+  try {
+    const saved = await saveGenerationAsDraftCore(payload, user, input)
+    await writeAuditLog(payload, {
+      action: 'ai.draft.saved',
+      actorId: user.id,
+      metadata: { slug: saved.slug, status: saved.status },
+      request,
+      resourceId: saved.postId,
+      resourceType: 'post',
+    })
+    return saved
+  } catch (error) {
+    await writeAuditLog(payload, {
+      action: 'ai.draft.save_failed',
+      actorId: user.id,
+      metadata: { errorCode: error instanceof AIError ? error.code : 'DRAFT_SAVE_FAILED' },
+      outcome: 'failure',
+      request,
+      resourceId: input.generationId,
+      resourceType: 'ai-generation',
+    })
+    throw error
+  }
+}
+
+async function saveGenerationAsDraftCore(
   payload: Payload,
   user: NonNullable<PayloadRequest['user']>,
   input: { generationId: number | string; slug: string },

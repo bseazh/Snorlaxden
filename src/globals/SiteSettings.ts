@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '../access'
+import { auditGlobalHooks } from '../modules/audit'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -8,6 +9,7 @@ export const SiteSettings: GlobalConfig = {
     read: () => true,
     update: authenticated,
   },
+  hooks: auditGlobalHooks('site-settings'),
   fields: [
     { name: 'displayName', type: 'text', defaultValue: '何海钊', required: true },
     { name: 'roleTitle', type: 'text', defaultValue: '人工智能硕士', required: true },
@@ -30,4 +32,3 @@ export const SiteSettings: GlobalConfig = {
     { name: 'icpNumber', type: 'text' },
   ],
 }
-

@@ -74,6 +74,9 @@ providers / infrastructure
 | 项目 | Payload `projects` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | FAQ/标签/站点设置 | Payload Collections/Global | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 | 否 |
+| 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读 | 否 |
+| 开发日志 | `logs/development/` | Git 工作区和 GitHub | 是 |
+| 运行日志导出 | `logs/runtime/` | 本地或服务器受控目录 | 否 |
 | AI 保存的 Markdown 草稿 | Payload `posts` 草稿为权威；Markdown 为审阅副本 | 本地 `content/articles/`；生产 `/app/content-data/articles/` | 默认忽略正文 |
 | 待导入 Markdown | `content/inbox/` | 开发者本机 | 默认忽略 |
 | Markdown 导出 | `content/exports/` | 生成目录 | 默认忽略 |
@@ -224,3 +227,22 @@ pnpm build
 - Web 固定绑定 `127.0.0.1:3999`，不占用现有 `3000`、`9000` 服务。
 - 不在服务器直接修改业务代码；运行时 `.env`、数据库和媒体不回传 Git。
 - 发布后验证公开路由、管理员路由、权限拒绝、日志和容器状态。
+
+## 9. 日志与审计标准
+
+所有日志位置统一从 `logs/README.md` 查找，禁止在项目中再创建用途不明的散落日志目录。
+
+### 操作审计
+
+- 登录/退出、AI 调用与限额拒绝、AI 草稿保存，以及内容创建、修改、发布、撤回、删除必须写入 `audit-logs`。
+- 审计记录只能由服务端内部创建；管理员只读，REST、GraphQL 和 Local API 均不得通过访问控制更新或删除。
+- 每条记录包含 action、outcome、actor、resource、requestId、时间和受控 metadata。
+- 客户端 IP 不保存明文，只保存由 `AUDIT_IP_HASH_SALT` 加盐的 SHA-256 摘要。
+- 禁止把 Authorization、Cookie、密码、Token、API Key、正文、原始素材、Prompt 和完整模型输出写入 metadata。
+
+### 开发与部署日志
+
+- 每个完整工作包在 `logs/development/YYYY-MM-DD.md` 记录需求、关键决策、迁移、测试、commit 和部署结果。
+- Git commit 是代码修改的最终逐行历史；开发日志用于解释为什么修改和如何验收，不能替代 commit。
+- Docker `web`、`migrate`、`seed`、`db` 统一采用 `local` driver，单文件 10MB，最多 5 个文件。
+- 需要离线归档时运行 `pnpm logs:export`，输出 JSONL 到 `logs/runtime/`；该目录禁止提交 Git。

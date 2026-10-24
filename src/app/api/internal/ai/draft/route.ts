@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
   try {
     const input = validateDraftRequest(await request.json())
-    return Response.json(await generateAndRecordArticleDraft(payload, user, input))
+    return Response.json(await generateAndRecordArticleDraft(payload, user, input, { headers: request.headers }))
   } catch (error) {
     if (error instanceof AIError) {
       return Response.json({ code: error.code, message: error.message }, { status: error.status })

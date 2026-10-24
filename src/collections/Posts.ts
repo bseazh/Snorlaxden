@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated, authenticatedOrPublished } from '../access'
 import { seoFields } from '../fields/seo'
+import { auditCollectionHooks } from '../modules/audit'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -16,6 +17,7 @@ export const Posts: CollectionConfig = {
     update: authenticated,
   },
   defaultSort: '-publishedAt',
+  hooks: auditCollectionHooks('post'),
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', index: true, required: true, unique: true },

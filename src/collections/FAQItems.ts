@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, enabledForPublic } from '../access'
+import { auditCollectionHooks } from '../modules/audit'
 
 export const FAQItems: CollectionConfig = {
   slug: 'faq-items',
@@ -15,6 +16,7 @@ export const FAQItems: CollectionConfig = {
     update: authenticated,
   },
   defaultSort: 'sortOrder',
+  hooks: auditCollectionHooks('faq'),
   fields: [
     { name: 'question', type: 'text', required: true },
     { name: 'answer', type: 'textarea', required: true },
@@ -23,4 +25,3 @@ export const FAQItems: CollectionConfig = {
     { name: 'enabled', type: 'checkbox', defaultValue: true, index: true },
   ],
 }
-

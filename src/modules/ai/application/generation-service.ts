@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto'
 
 import type { Payload, PayloadRequest } from 'payload'
 
+import { type AuditRequestContext, writeAuditLog } from '@/modules/audit'
+
 import { AIError, type DraftRequest, type GeneratedDraft, type GenerationResult } from '../domain/types'
 import { parseGeneratedDraft } from '../domain/validation'
 import { createStructuredChatCompletion } from '../infrastructure/openai-compatible-client'
@@ -40,13 +42,16 @@ export async function generateAndRecordArticleDraft(
   payload: Payload,
   user: NonNullable<PayloadRequest['user']>,
   input: DraftRequest,
+  request?: AuditRequestContext,
 ): Promise<GenerationResult> {
   if (process.env.AI_TEXT_ENABLED !== 'true') {
+    await writeAuditLog(payload, { action: 'ai.generation.denied', actorId: user.id, metadata: { reason: 'AI_DISABLED' }, outcome: 'denied', request, resourceType: 'ai-generation' })
     throw new AIError('AI_DISABLED', 'AI 文本生成功能当前未启用。', 503)
   }
 
   const usage = await getDailyUsage(payload, user.id)
   if (usage.remaining === 0) {
+    await writeAuditLog(payload, { action: 'ai.generation.denied', actorId: user.id, metadata: { limit: usage.limit, reason: 'RATE_LIMITED' }, outcome: 'denied', request, resourceType: 'ai-generation' })
     throw new AIError('RATE_LIMITED', `今日 AI 调用已达到 ${usage.limit} 次上限。`, 429)
   }
 
@@ -71,6 +76,14 @@ export async function generateAndRecordArticleDraft(
     },
     overrideAccess: true,
   })
+  await writeAuditLog(payload, {
+    action: 'ai.generation.started',
+    actorId: user.id,
+    metadata: { model: config.model, provider: input.provider, promptVersion },
+    request,
+    resourceId: generation.id,
+    resourceType: 'ai-generation',
+  })
 
   try {
     const content = await createStructuredChatCompletion(config, [
@@ -83,6 +96,14 @@ export async function generateAndRecordArticleDraft(
       id: generation.id,
       data: { result: draft, status: 'succeeded' },
       overrideAccess: true,
+    })
+    await writeAuditLog(payload, {
+      action: 'ai.generation.succeeded',
+      actorId: user.id,
+      metadata: { model: config.model, provider: input.provider, promptVersion },
+      request,
+      resourceId: generation.id,
+      resourceType: 'ai-generation',
     })
 
     return {
@@ -102,6 +123,15 @@ export async function generateAndRecordArticleDraft(
       id: generation.id,
       data: { errorCode: aiError.code, errorMessage: aiError.message, status: 'failed' },
       overrideAccess: true,
+    })
+    await writeAuditLog(payload, {
+      action: 'ai.generation.failed',
+      actorId: user.id,
+      metadata: { errorCode: aiError.code, model: config.model, provider: input.provider },
+      outcome: 'failure',
+      request,
+      resourceId: generation.id,
+      resourceType: 'ai-generation',
     })
     throw aiError
   }

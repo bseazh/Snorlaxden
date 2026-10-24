@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated, authenticatedOrPublished } from '../access'
 import { seoFields } from '../fields/seo'
+import { auditCollectionHooks } from '../modules/audit'
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
@@ -16,6 +17,7 @@ export const Projects: CollectionConfig = {
     update: authenticated,
   },
   defaultSort: 'sortOrder',
+  hooks: auditCollectionHooks('project'),
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', index: true, required: true, unique: true },
@@ -45,4 +47,3 @@ export const Projects: CollectionConfig = {
     maxPerDoc: 30,
   },
 }
-
