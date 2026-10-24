@@ -18,6 +18,16 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Database operations use the full dependency tree and source configuration.
+FROM deps AS operations
+WORKDIR /app
+COPY . .
+
+FROM operations AS migrator
+CMD ["sh", "-c", "corepack enable pnpm && pnpm payload migrate"]
+
+FROM operations AS seed
+CMD ["sh", "-c", "corepack enable pnpm && pnpm seed"]
 
 # Rebuild the source code only when needed
 FROM base AS builder

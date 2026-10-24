@@ -2,9 +2,9 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0 已完成并部署**。项目现已进入 **Sprint 1：核心内容与页面（P0）**，下一项工作是 `ISSUE-002`：先完成管理员权限与 published-only 公开读取过滤，再实现内容模型和公开页面。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0 和 Sprint 1 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、首批项目与文章、响应式公开站和 SEO。下一阶段为 **Sprint 2：第二知识仓库（P0）**。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
-当前生产骨架已运行在 https://blog.snorlaxden.fun；页面仍是 Payload 初始模板，正式内容模型和数字花园界面将在 Sprint 1 中替换。
+生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
 ## 技术栈
 
@@ -43,6 +43,15 @@ pnpm dev
 - Payload 后台：`http://localhost:3000/admin`
 
 第一次打开后台时创建本地管理员。开发账户和数据库不得直接用于生产环境。
+
+首次安装或 schema 更新后执行迁移和首批内容导入：
+
+```bash
+pnpm payload migrate
+pnpm seed
+```
+
+`pnpm seed` 仅在首批内容不存在时写入个人资料、3 个项目、3 篇文章和 6 个 FAQ。生产 Compose 会在 Web 启动前按顺序运行 migration 与 seed。
 
 停止本地数据库：
 
@@ -138,6 +147,9 @@ infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片�
 
 - 私人 Obsidian Vault 不进入本仓库或服务器；只发布白名单导出的副本。
 - Resource、SourceMaterial、AI 产物和 Media 默认私密。
+- 用户、内容和媒体写操作仅允许已登录管理员；公开读取在 Payload access 层过滤。
+- 文章和项目只有 `_status=published` 时对访客可见；撤回后详情返回 404。
+- 媒体仅允许 JPEG、PNG、WebP、AVIF，HTTP 上传限制为 10MB，默认私有。
 - AI 只生成草稿，发布必须由管理员确认。
 - 未获得合法字幕时，视频只能收藏链接、元数据和本人笔记。
 - 数据库不开放公网端口；生产 Web 仅绑定服务器回环地址。

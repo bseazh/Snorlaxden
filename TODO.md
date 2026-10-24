@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-24  
-> 当前里程碑：Sprint 1｜核心内容与页面（P0）  
+> 当前里程碑：Sprint 1 已完成，准备 Sprint 2｜第二知识仓库（P0）
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -17,17 +17,17 @@
 - [x] 接入 `https://blog.snorlaxden.fun` 和自动 HTTPS
 - [x] 验证首页、后台、未认证 API 拒绝访问及 PostgreSQL 健康状态
 
-## 当前工作｜Sprint 1 核心内容与页面
+## 已完成｜Sprint 1 核心内容与页面
 
 ### [ISSUE-002｜认证与公开访问过滤](https://github.com/bseazh/Snorlaxden/issues/1)
 
-这是下一项要实施的工作，是后续内容开发的安全前置条件。
+后续内容开发的安全前置条件已经完成。
 
-- [ ] 将 `users` 明确限制为管理员访问，不开放公开注册
-- [ ] 建立复用的管理员访问控制与 published-only 公开读取规则
-- [ ] 明确 Payload Local API 的 `overrideAccess` 使用方式
-- [ ] 添加未登录读取用户列表、写入内容及读取草稿的集成测试
-- [ ] 验证 T002、T003：草稿不可见，匿名写入返回 401/403
+- [x] 将 `users` 明确限制为管理员访问，不开放公开注册
+- [x] 建立复用的管理员访问控制与 published-only 公开读取规则
+- [x] 明确 Payload Local API 的 `overrideAccess` 使用方式
+- [x] 添加未登录读取用户列表、写入内容及读取草稿的集成测试
+- [x] 验证 T002、T003：草稿不可见，匿名写入返回 401/403
 
 完成标准：公开 API 无法读取用户、草稿或私有字段；管理员登录和后台操作保持正常。
 
@@ -35,13 +35,13 @@
 
 依赖：ISSUE-002。
 
-- [ ] 创建 `tags`、`posts`、`projects`、`faqItems` Collections
-- [ ] 创建 `siteSettings` Global，并补充 `media` 的用途、可见性、授权和 alt 字段
-- [ ] 为文章和项目启用 Payload drafts/versions
-- [ ] 添加 slug 唯一约束、发布时间、精选状态和 SEO 字段
-- [ ] 生成并审阅 Payload 类型与 PostgreSQL migration
-- [ ] 添加发布、预览、撤回及公开 API 过滤测试
-- [ ] 验证 T004、T005、T006
+- [x] 创建 `tags`、`posts`、`projects`、`faqItems` Collections
+- [x] 创建 `siteSettings` Global，并补充 `media` 的用途、可见性、授权和 alt 字段
+- [x] 为文章和项目启用 Payload drafts/versions
+- [x] 添加 slug 唯一约束、发布时间、精选状态和 SEO 字段
+- [x] 生成并审阅 Payload 类型与 PostgreSQL migration
+- [x] 添加发布、预览、撤回及公开 API 过滤测试
+- [x] 验证 T004、T005、T006
 
 完成标准：后台可以完成文章草稿到发布、撤回，以及项目 CRUD；撤回内容立即停止公开访问。
 
@@ -49,31 +49,31 @@
 
 依赖：ISSUE-003。
 
-- [ ] 建立站点设计 tokens、响应式 Layout、Header 和 Footer
-- [ ] 实现首页、`/about`、`/projects`、项目详情
-- [ ] 实现 `/journal`、文章详情、`/contact`
-- [ ] 实现后台可编辑的预设 FAQ，AI 不可用时仍能正常工作
-- [ ] 实现 metadata、canonical、Open Graph、sitemap 和 robots
-- [ ] 补充加载、空状态、404、移动端及键盘操作体验
-- [ ] 增加公开页面 E2E 和移动端截图检查
-- [ ] 验证 T001、T002、T005
+- [x] 建立站点设计 tokens、响应式 Layout、Header 和 Footer
+- [x] 实现首页、`/about`、`/projects`、项目详情
+- [x] 实现 `/journal`、文章详情、`/contact`
+- [x] 实现后台可编辑的预设 FAQ，AI 不可用时仍能正常工作
+- [x] 实现 metadata、canonical、Open Graph、sitemap 和 robots
+- [x] 补充空状态、404、移动端及键盘操作体验
+- [x] 增加公开页面 E2E 和移动端截图检查
+- [x] 验证 T001、T002、T005
 
 完成标准：访客能在 30 秒内找到个人定位、项目、文章、知识入口和联系方式；移动端无横向溢出。
 
-### Sprint 1 内容准备（需要站长提供）
+### Sprint 1 首批内容
 
-- [ ] 150 字和 500 字真实个人简介
-- [ ] 个人照片或品牌标识
-- [ ] 公开联系方式和社交链接
-- [ ] 1–3 个真实项目案例
-- [ ] 2–3 篇真实文章或 Markdown 草稿
-- [ ] 4–8 个确认后的 FAQ 问答
+- [x] 个人简介与研究方向
+- [x] 个人照片优化副本
+- [x] 公开邮箱和 GitHub 链接
+- [x] LawyerBuddy、PrivacyGuard、GGGMing 项目案例
+- [x] 从旧站整理 3 篇真实文章
+- [x] 创建 6 个可在后台编辑的 FAQ 问答
 
 内容未齐时可以先使用明确标记的开发样例，但不得把虚构资料发布到生产站。
 
 ## 后续工作
 
-### Sprint 2｜第二知识仓库（P0）
+### Sprint 2｜第二知识仓库（P0，下一阶段）
 
 - [ ] ISSUE-005：资源收藏、分类、标签和安全 URL 标准化
 - [ ] ISSUE-006：私有媒体鉴权、来源关联和 Markdown 导出

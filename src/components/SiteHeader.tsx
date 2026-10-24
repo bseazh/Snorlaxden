@@ -1,0 +1,21 @@
+import Link from 'next/link'
+
+const navItems = [
+  ['关于', '/about'], ['项目', '/projects'], ['文章', '/journal'], ['花园', '/garden'], ['联系', '/contact'],
+] as const
+
+export function SiteHeader() {
+  return (
+    <header className="site-header">
+      <div className="shell header-inner">
+        <Link className="brand" href="/" aria-label="何海钊数字花园首页">
+          <span className="brand-mark" aria-hidden="true">HZ</span><span>何海钊的数字花园</span>
+        </Link>
+        <nav className="primary-nav" aria-label="主导航">
+          {navItems.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
+        </nav>
+      </div>
+    </header>
+  )
+}
+
