@@ -95,6 +95,8 @@ AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。按�
 
 服务器已经运行 systemd Caddy，因此本项目生产 Web 服务固定绑定 `127.0.0.1:3999`，本地开发仍使用 `3000`。正式访问链路为 `blog.snorlaxden.fun -> Caddy -> 127.0.0.1:3999`；`3999` 只用于服务器本机健康检查。域名接入将 `infra/Caddyfile.snorlaxden` 合并到服务器现有 `/etc/caddy/Caddyfile`，不覆盖其他站点，也不启动第二个公网反向代理。
 
+生产镜像通过腾讯云镜像代理 `mirror.ccs.tencentyun.com` 拉取，并在 `Dockerfile` 与 `compose.production.yaml` 中固定镜像摘要，避免 Docker Hub 连接超时及镜像标签漂移。
+
 生产部署命令：
 
 ```bash
