@@ -24,6 +24,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p public
 
 # Build-time values only. Runtime secrets are injected by Compose and never copied into the image.
 ENV DATABASE_URL=postgres://build:build@db:5432/build
