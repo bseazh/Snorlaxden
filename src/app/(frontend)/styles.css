@@ -117,6 +117,43 @@ button, input, textarea, select { font: inherit; }
 .not-found { text-align: center; }
 .not-found .button { margin-top: 20px; }
 
+.studio-shell { min-height: 80vh; padding-block: 54px 100px; }
+.studio-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
+.studio-heading h1 { margin: 0; font: 500 48px/1.1 Georgia, "Songti SC", serif; }
+.studio-grid { display: grid; grid-template-columns: minmax(360px, .8fr) minmax(0, 1.2fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+.studio-form, .studio-output { min-width: 0; padding: 30px; background: var(--white); }
+.studio-form { display: grid; align-content: start; gap: 22px; }
+.studio-form label { display: grid; gap: 7px; color: #3f443f; font-size: 13px; font-weight: 750; }
+.studio-form textarea, .studio-form select, .studio-form input[type="number"] { width: 100%; border: 1px solid var(--line); border-radius: 3px; padding: 10px 12px; color: var(--ink); background: #fff; font-weight: 400; }
+.studio-form textarea { resize: vertical; line-height: 1.6; }
+.studio-form-row { display: grid; grid-template-columns: 1fr 1fr 110px; gap: 12px; }
+.provider-switch { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; padding: 0; border: 0; }
+.provider-switch legend { margin-bottom: 7px; color: #3f443f; font-size: 13px; font-weight: 750; }
+.provider-switch label { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
+.provider-switch label.active { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+.provider-switch small { color: var(--muted); font-weight: 400; }
+.studio-submit { width: 100%; cursor: pointer; }
+.studio-submit:disabled { cursor: wait; opacity: .55; }
+.studio-error { margin: -10px 0 0; color: var(--red); font-size: 14px; }
+.studio-output { min-height: 720px; }
+.studio-empty { min-height: 650px; display: grid; place-content: center; text-align: center; color: var(--muted); }
+.studio-empty span { color: var(--ink); font: 28px Georgia, serif; }
+.studio-empty p { margin: 8px 0 0; }
+.studio-output-head { display: flex; align-items: start; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--ink); }
+.studio-output-head h2 { margin: 0; font: 500 36px/1.2 Georgia, "Songti SC", serif; }
+.studio-output-head .button { flex: 0 0 auto; cursor: pointer; }
+.studio-summary { margin: 24px 0 36px; color: var(--muted); font-size: 18px; }
+.studio-output article h3, .fact-review h3 { margin: 34px 0 12px; font: 500 24px Georgia, "Songti SC", serif; }
+.studio-output article p { margin: 0 0 16px; }
+.studio-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+.studio-tags span { padding: 4px 9px; border: 1px solid var(--green); color: var(--green); font-size: 12px; }
+.fact-review { margin-top: 36px; padding: 20px; border-left: 5px solid var(--yellow); background: var(--paper); }
+.fact-review h3 { margin-top: 0; }
+.fact-review ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.fact-review li { display: grid; grid-template-columns: 60px 1fr; gap: 10px; font-size: 14px; }
+.fact-review li strong { color: var(--red); }
+.ai-disclosure { margin: 32px 0 0; color: var(--muted); font-size: 12px; }
+
 .site-footer { padding-block: 50px; color: #d9ded9; background: var(--ink); }
 .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 40px; align-items: end; }
 .footer-name { margin: 0; color: var(--white); font: 26px Georgia, serif; }
@@ -131,6 +168,7 @@ button, input, textarea, select { font: inherit; }
   .stat-strip div:nth-child(2) { border-right: 0; }
   .garden-inner { grid-template-columns: 1fr; }
   .faq-layout, .contact-layout { grid-template-columns: 1fr; gap: 48px; }
+  .studio-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
@@ -159,6 +197,14 @@ button, input, textarea, select { font: inherit; }
   .milestone-grid { grid-template-columns: 1fr; }
   .rich-text { font-size: 17px; }
   .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  .studio-heading { align-items: flex-start; flex-direction: column; }
+  .studio-form, .studio-output { padding: 20px; }
+  .studio-form-row { grid-template-columns: 1fr; }
+  .provider-switch { grid-template-columns: 1fr; }
+  .studio-output { min-height: 480px; }
+  .studio-empty { min-height: 420px; }
+  .studio-output-head { flex-direction: column; }
+  .studio-output-head h2 { font-size: 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

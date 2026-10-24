@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0 和 Sprint 1 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、首批项目与文章、响应式公开站和 SEO。下一阶段为 **Sprint 2：第二知识仓库（P0）**。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0 和 Sprint 1 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、首批项目与文章、响应式公开站和 SEO。当前先进行 **Sprint 4：AI 内容试运行**，效果确认后恢复 Sprint 2。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -69,15 +69,15 @@ pnpm dev:db:down
 | `DATABASE_URL` | Payload PostgreSQL 连接 | 已使用 |
 | `PAYLOAD_SECRET` | Payload 会话及签名 | 已使用 |
 | `NEXT_PUBLIC_SERVER_URL` | 站点公开地址 | 已使用 |
-| `STEPFUN_API_KEY` | 阶跃星辰服务端密钥 | 已保存，尚未接入 |
+| `STEPFUN_API_KEY` | 阶跃星辰服务端密钥 | 已接入，当前账号额度不足 |
 | `STEPFUN_BASE_URL` | `https://api.stepfun.com/v1` | 已配置 |
 | `STEPFUN_MODEL` | 阶跃星辰模型，可按账号权限调整 | 已配置 |
-| `DEEPSEEK_API_KEY` | DeepSeek 服务端密钥 | 已保存，尚未接入 |
+| `DEEPSEEK_API_KEY` | DeepSeek 服务端密钥 | 已接入并完成真实生成 |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | 已配置 |
 | `DEEPSEEK_MODEL` | DeepSeek 模型，可按账号权限调整 | 已配置 |
-| `AI_*_ENABLED` | AI 能力开关 | 默认全部关闭 |
+| `AI_*_ENABLED` | AI 能力开关 | 模板默认关闭，生产仅启用文本试运行 |
 
-AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。按照产品规格，AI 接入属于 Sprint 4；在 Provider、Schema 校验、额度限制和审计记录完成前，功能开关保持关闭。
+AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化待审核草稿。工作台不会自动保存或发布；生成记录、额度限制和一键存为 Payload 草稿将在试运行效果确认后实现。
 
 官方 API 文档：
 

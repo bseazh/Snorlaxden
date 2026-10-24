@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-24  
-> 当前里程碑：Sprint 1 已上线，准备 Sprint 2｜第二知识仓库（P0）
+> 当前里程碑：Sprint 1 已上线，Sprint 4｜AI 内容试运行进行中
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -73,6 +73,18 @@
 
 ## 后续工作
 
+### Sprint 4｜AI 内容试运行（当前阶段）
+
+- [ ] [ISSUE-009：AI TextProvider 与文章草稿试运行](https://github.com/bseazh/Snorlaxden/issues/8)
+- [x] 建立 StepFun/DeepSeek 服务端 Provider，密钥不进入浏览器
+- [x] 实现 `article-writer-v1` 提示词、输入边界和结构化结果校验
+- [x] 实现仅管理员可访问的 `/studio` 写作工作台
+- [x] 使用 DeepSeek 真实生成文章草稿、标签与事实核实清单
+- [ ] StepFun 当前返回 402，恢复供应商额度后完成真实生成验收
+- [ ] 效果确认后再加入生成记录、限额和“一键保存为文章草稿”
+- [ ] AI 产物只允许进入草稿，发布必须由管理员确认
+- [ ] 验证 T013–T017
+
 ### 参考实现与采用边界
 
 后续功能优先借鉴本地已有项目，而不是从零设计，但继续保留当前 Next.js + Payload 架构：
@@ -82,7 +94,7 @@
 - 只移植适合本站的数据模型与交互，不直接复制完整代码、部署第二套后台或引入 Go 服务。
 - 当前阶段先保证基础内容、权限和发布流程稳定；搜索、图谱、快速记录和视觉重构按 Sprint 分批验收。
 
-### Sprint 2｜第二知识仓库（P0，下一阶段）
+### Sprint 2｜第二知识仓库（P0，AI 试运行后恢复）
 
 - [ ] [ISSUE-005：资源收藏、时间线与安全 URL](https://github.com/bseazh/Snorlaxden/issues/4)
 - [ ] 借鉴 Memos 建立按时间倒序的资源/短记浏览，并支持标签筛选
@@ -100,13 +112,10 @@
 - [ ] 保持 Quartz 只读取公开导出副本，绝不直接读取私人 Obsidian Vault
 - [ ] 验证 T007–T010
 
-### Sprint 4｜AI 内容试运行（P1，可关闭）
+### AI 后续增强（P1，可关闭）
 
-- [ ] ISSUE-009：StepFun/DeepSeek `TextProvider`、结构校验和文章草稿
 - [ ] ISSUE-010：图像 Provider、提示词版本和候选封面
 - [ ] ISSUE-011：用户提供合法文字后的知识卡生成
-- [ ] 保持所有 AI 功能默认关闭，产物只进入草稿
-- [ ] 验证 T013–T017
 
 ### Sprint 5｜生产完善（P0）
 

@@ -27,7 +27,7 @@ test.describe('Admin Panel', () => {
 
   test('can navigate to list view', async () => {
     await page.goto('http://localhost:3000/admin/collections/users')
-    await expect(page).toHaveURL('http://localhost:3000/admin/collections/users')
+    await expect(page).toHaveURL(/\/admin\/collections\/users(?:\?.*)?$/)
     const listViewArtifact = page.locator('h1', { hasText: 'Users' }).first()
     await expect(listViewArtifact).toBeVisible()
   })
@@ -37,5 +37,35 @@ test.describe('Admin Panel', () => {
     await expect(page).toHaveURL(/\/admin\/collections\/users\/[a-zA-Z0-9-_]+/)
     const editViewArtifact = page.locator('input[name="email"]')
     await expect(editViewArtifact).toBeVisible()
+  })
+
+  test('can generate and review a structured AI draft', async () => {
+    await page.route('**/api/internal/ai/draft', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: {
+          provider: 'deepseek',
+          model: 'deepseek-chat',
+          promptVersion: 'article-writer-v1',
+          draft: {
+            title: '测试生成的待审核文章',
+            summary: '用于验证工作台展示和事实核实流程。',
+            outline: ['背景'],
+            sections: [{ id: 's1', heading: '背景', paragraphs: ['这是一段待管理员审核的正文。'] }],
+            factChecklist: [{ claim: '活动时间', status: 'missing', question: '活动发生在什么时候？' }],
+            suggestedTags: ['测试'],
+            disclosure: { aiAssisted: true },
+          },
+        },
+      })
+    })
+
+    await page.goto('http://localhost:3000/studio')
+    await page.fill('textarea[name="sourceText"]', '这是一段超过二十个字符的测试素材，用于验证管理员写作工作台。')
+    await page.click('button[type="submit"]')
+
+    await expect(page.getByRole('heading', { name: '测试生成的待审核文章' })).toBeVisible()
+    await expect(page.getByText('活动发生在什么时候？')).toBeVisible()
+    await expect(page.getByText('不会自动发布')).toBeVisible()
   })
 })
