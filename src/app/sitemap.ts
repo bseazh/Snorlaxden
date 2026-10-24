@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-import { getLatestPosts, getProjects } from '@/lib/content'
+import { getLatestPosts, getProjects } from '@/modules/content'
 
 export const dynamic = 'force-dynamic'
 

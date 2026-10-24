@@ -1,9 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
-import { generateArticleDraft } from '@/lib/ai/providers'
-import { AIError } from '@/lib/ai/types'
-import { validateDraftRequest } from '@/lib/ai/validation'
+import { AIError, generateArticleDraft, validateDraftRequest } from '@/modules/ai'
 
 export const dynamic = 'force-dynamic'
 

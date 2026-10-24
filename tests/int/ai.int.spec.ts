@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { AIError } from '@/lib/ai/types'
-import { parseGeneratedDraft, validateDraftRequest } from '@/lib/ai/validation'
+import { AIError } from '@/modules/ai'
+import { parseGeneratedDraft, validateDraftRequest } from '@/modules/ai/domain/validation'
 
 describe('AI draft validation', () => {
   it('accepts a bounded administrator draft request', () => {

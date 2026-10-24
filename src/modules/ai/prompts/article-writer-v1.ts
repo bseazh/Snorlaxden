@@ -1,4 +1,4 @@
-import type { DraftRequest } from './types'
+import type { DraftRequest } from '../domain/types'
 
 export const promptVersion = 'article-writer-v1' as const
 

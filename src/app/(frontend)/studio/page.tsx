@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { AIWritingStudio } from '@/components/AIWritingStudio'
-import { getProviderAvailability } from '@/lib/ai/providers'
+import { getProviderAvailability } from '@/modules/ai'
 
 export const metadata: Metadata = { title: 'AI 写作工作台', robots: { index: false, follow: false } }
 

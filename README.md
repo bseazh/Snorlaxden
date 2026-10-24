@@ -19,6 +19,46 @@ Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与
 
 依赖使用精确版本和 lockfile。Payload `3.92.0` 已提高 Node 最低版本，本项目暂时锁定 `3.91.0`，升级前必须重新执行完整检查。
 
+## 整体架构
+
+```mermaid
+flowchart TB
+  Visitor[公开访客] --> Caddy[Caddy / HTTPS]
+  Admin[管理员] --> Caddy
+  Caddy --> Next[Next.js 16 应用]
+
+  subgraph Web[应用层]
+    Public[公开站页面]
+    Studio[管理员 AI 工作台]
+    Routes[Route Handlers]
+    Payload[Payload CMS]
+  end
+
+  Next --> Public
+  Next --> Studio
+  Next --> Routes
+  Routes --> Payload
+  Public --> ContentModule[Content Module]
+  ContentModule --> Payload
+
+  Payload --> PostgreSQL[(PostgreSQL 17)]
+  Payload --> Media[Media / Storage Adapter]
+  Media --> Local[(当前：Docker media_data)]
+  Media -. 后续切换 .-> ObjectStorage[(COS / OSS / S3)]
+
+  Studio --> AIModule[AI Module]
+  Routes --> AIModule
+  AIModule --> DeepSeek[DeepSeek API]
+  AIModule --> StepFun[StepFun API]
+
+  Payload -. 白名单导出 .-> Export[content/public-garden]
+  Export -. Sprint 3 .-> Quartz[Quartz 静态知识花园]
+```
+
+关键边界：Next.js 负责页面和 HTTP；Payload 负责认证、内容模型与访问控制；PostgreSQL 是正式结构化内容的唯一真源；上传文件通过 Storage Adapter 管理；AI 只生成待审核草稿；Quartz 未来只读取白名单导出副本。
+
+详细开发、模块、内容和对象存储标准见 [DX 文档](docs/DX.md)。
+
 ## 本地运行
 
 前置条件：Node、pnpm 和 Docker Desktop。
@@ -119,6 +159,21 @@ docker compose -f compose.production.yaml up -d --build
 
 生产 `DATABASE_URL` 的主机名必须使用 Compose 服务名 `db`，不能使用 `127.0.0.1`。
 
+## 内容与文件位置
+
+| 数据 | 权威位置 | 当前物理位置 |
+|---|---|---|
+| 正式文章 | Payload `posts` | PostgreSQL |
+| 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |
+| 待导入 Markdown | 非权威工作副本 | `content/inbox/`，默认不进 Git |
+| Markdown 导出 | 生成产物 | `content/exports/`，默认不进 Git |
+| Quartz 公开副本 | 白名单构建产物 | `content/public-garden/`，默认不进 Git |
+| 上传媒体 | Payload `media` + 文件存储 | 本地 `media/`；生产 `/app/media` volume |
+| 构建期公开图片 | Git 管理的静态资产 | `public/images/` |
+| AI Prompt | 版本化代码 | `src/modules/ai/prompts/` |
+
+文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；Markdown 只作为导入或导出格式。对象存储尚未启用，未来通过 Storage Adapter 迁移到腾讯云 COS 或其他 S3-compatible 服务。
+
 ## 质量检查
 
 ```bash
@@ -133,8 +188,13 @@ pnpm build
 ## 目录
 
 ```text
-src/                         Next.js 与 Payload 源码
+src/app/                     Next.js 页面与 HTTP 边界
+src/modules/                 AI、内容等业务模块
+src/collections/             Payload Collection Schema
+src/migrations/              PostgreSQL 迁移
+content/                     受控导入、导出与公开花园工作区
 tests/                       集成测试与端到端测试
+docs/DX.md                   开发、内容、媒体和对象存储标准
 docs/spec/                   v1.0 产品、架构、模块与验收规格
 TODO.md                      当前 Sprint、任务依赖与验收清单
 compose.yaml                 本地 PostgreSQL

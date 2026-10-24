@@ -3,7 +3,7 @@ import React from 'react'
 
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import { getSiteSettings } from '@/lib/content'
+import { getSiteSettings } from '@/modules/content'
 
 import './styles.css'
 

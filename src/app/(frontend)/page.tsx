@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { PostList } from '@/components/PostList'
 import { ProjectList } from '@/components/ProjectList'
-import { getFAQItems, getFeaturedProjects, getLatestPosts, getSiteSettings } from '@/lib/content'
+import { getFAQItems, getFeaturedProjects, getLatestPosts, getSiteSettings } from '@/modules/content'
 
 export default async function HomePage() {
   const [settings, projects, posts, faqItems] = await Promise.all([

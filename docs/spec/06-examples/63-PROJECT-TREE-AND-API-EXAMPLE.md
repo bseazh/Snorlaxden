@@ -11,7 +11,7 @@ hehaizhao-digital-space/
 │   │   ├── collections/                 # Posts/Projects/FAQ/Resources/Media/Users
 │   │   ├── globals/                     # SiteSettings
 │   │   ├── components/                  # Header, FAQ, PostBlocks
-│   │   ├── lib/ai/                      # TextProvider/ImageProvider/PromptRegistry
+│   │   ├── modules/ai/                  # application/domain/providers/prompts
 │   │   ├── lib/ingestion/               # PlatformAdapter / URL normalize
 │   │   ├── lib/export/                  # Markdown 导出
 │   │   └── payload.config.ts

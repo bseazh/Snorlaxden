@@ -73,6 +73,15 @@
 
 ## 后续工作
 
+### 已完成｜[CHORE-001：工程模块化与内容存储标准](https://github.com/bseazh/Snorlaxden/issues/9)
+
+- [x] 按业务能力建立 `src/modules/ai` 和 `src/modules/content`
+- [x] AI 拆分为 application、domain、infrastructure、prompts 和 providers
+- [x] 明确 Payload/PostgreSQL 为正式文章唯一真源
+- [x] 建立 `content/inbox`、`content/exports` 和 `content/public-garden` 工作区边界
+- [x] 新增 `docs/DX.md`，规范代码、内容、媒体、OSS/COS、测试和发布
+- [x] README 增加整体架构图和数据位置表
+
 ### Sprint 4｜AI 内容试运行（当前阶段）
 
 - [ ] [ISSUE-009：AI TextProvider 与文章草稿试运行](https://github.com/bseazh/Snorlaxden/issues/8)

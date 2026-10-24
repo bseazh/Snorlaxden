@@ -11,8 +11,13 @@ export const getSiteSettings = cache(async () => {
 export const getFeaturedProjects = cache(async (limit = 3) => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'projects', depth: 1, draft: false, limit, overrideAccess: false,
-    sort: 'sortOrder', where: { isFeatured: { equals: true } },
+    collection: 'projects',
+    depth: 1,
+    draft: false,
+    limit,
+    overrideAccess: false,
+    sort: 'sortOrder',
+    where: { isFeatured: { equals: true } },
   })
   return result.docs
 })
@@ -20,7 +25,12 @@ export const getFeaturedProjects = cache(async (limit = 3) => {
 export const getProjects = cache(async () => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'projects', depth: 1, draft: false, limit: 100, overrideAccess: false, sort: 'sortOrder',
+    collection: 'projects',
+    depth: 1,
+    draft: false,
+    limit: 100,
+    overrideAccess: false,
+    sort: 'sortOrder',
   })
   return result.docs
 })
@@ -28,7 +38,11 @@ export const getProjects = cache(async () => {
 export const getProjectBySlug = cache(async (slug: string) => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'projects', depth: 1, draft: false, limit: 1, overrideAccess: false,
+    collection: 'projects',
+    depth: 1,
+    draft: false,
+    limit: 1,
+    overrideAccess: false,
     where: { slug: { equals: slug } },
   })
   return result.docs[0] ?? null
@@ -37,7 +51,12 @@ export const getProjectBySlug = cache(async (slug: string) => {
 export const getLatestPosts = cache(async (limit = 6) => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'posts', depth: 1, draft: false, limit, overrideAccess: false, sort: '-publishedAt',
+    collection: 'posts',
+    depth: 1,
+    draft: false,
+    limit,
+    overrideAccess: false,
+    sort: '-publishedAt',
   })
   return result.docs
 })
@@ -45,7 +64,11 @@ export const getLatestPosts = cache(async (limit = 6) => {
 export const getPostBySlug = cache(async (slug: string) => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'posts', depth: 1, draft: false, limit: 1, overrideAccess: false,
+    collection: 'posts',
+    depth: 1,
+    draft: false,
+    limit: 1,
+    overrideAccess: false,
     where: { slug: { equals: slug } },
   })
   return result.docs[0] ?? null
@@ -54,8 +77,10 @@ export const getPostBySlug = cache(async (slug: string) => {
 export const getFAQItems = cache(async () => {
   const payload = await getPayload({ config })
   const result = await payload.find({
-    collection: 'faq-items', limit: 20, overrideAccess: false, sort: 'sortOrder',
+    collection: 'faq-items',
+    limit: 20,
+    overrideAccess: false,
+    sort: 'sortOrder',
   })
   return result.docs
 })
-

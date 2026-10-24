@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react'
 
-import type { GenerationResult, ProviderName } from '@/lib/ai/types'
+import type { GenerationResult, ProviderName } from '@/modules/ai'
 
 type Availability = { enabled: boolean; providers: Record<ProviderName, boolean> }
 type ErrorResponse = { code?: string; message?: string }
