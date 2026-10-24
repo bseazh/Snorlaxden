@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
-import { AIError, generateArticleDraft, validateDraftRequest } from '@/modules/ai'
+import { AIError, generateAndRecordArticleDraft, validateDraftRequest } from '@/modules/ai'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
   try {
     const input = validateDraftRequest(await request.json())
-    return Response.json(await generateArticleDraft(input))
+    return Response.json(await generateAndRecordArticleDraft(payload, user, input))
   } catch (error) {
     if (error instanceof AIError) {
       return Response.json({ code: error.code, message: error.message }, { status: error.status })

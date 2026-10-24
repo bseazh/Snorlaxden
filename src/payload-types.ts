@@ -73,6 +73,7 @@ export interface Config {
     posts: Post;
     projects: Project;
     'faq-items': FaqItem;
+    'ai-generations': AiGeneration;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -87,6 +88,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'faq-items': FaqItemsSelect<false> | FaqItemsSelect<true>;
+    'ai-generations': AiGenerationsSelect<false> | AiGenerationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -249,6 +251,7 @@ export interface Post {
   reviewState: 'editing' | 'needs_review' | 'approved' | 'archived';
   author?: (number | null) | User;
   aiDisclosure?: boolean | null;
+  aiGeneration?: (number | null) | AiGeneration;
   originalUrl?: string | null;
   seo?: {
     title?: string | null;
@@ -258,6 +261,45 @@ export interface Post {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-generations".
+ */
+export interface AiGeneration {
+  id: number;
+  creator: number | User;
+  provider: 'deepseek' | 'stepfun';
+  model: string;
+  promptVersion: string;
+  status: 'running' | 'succeeded' | 'failed' | 'saved_as_draft';
+  sourceHash: string;
+  sourceText: string;
+  verifiedFacts?: string | null;
+  request:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  result?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  savedPost?: (number | null) | Post;
+  markdownPath?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -458,6 +500,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'faq-items';
         value: number | FaqItem;
+      } | null)
+    | ({
+        relationTo: 'ai-generations';
+        value: number | AiGeneration;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -599,6 +645,7 @@ export interface PostsSelect<T extends boolean = true> {
   reviewState?: T;
   author?: T;
   aiDisclosure?: T;
+  aiGeneration?: T;
   originalUrl?: T;
   seo?:
     | T
@@ -654,6 +701,28 @@ export interface FaqItemsSelect<T extends boolean = true> {
   sortOrder?: T;
   relatedUrl?: T;
   enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-generations_select".
+ */
+export interface AiGenerationsSelect<T extends boolean = true> {
+  creator?: T;
+  provider?: T;
+  model?: T;
+  promptVersion?: T;
+  status?: T;
+  sourceHash?: T;
+  sourceText?: T;
+  verifiedFacts?: T;
+  request?: T;
+  result?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  savedPost?: T;
+  markdownPath?: T;
   updatedAt?: T;
   createdAt?: T;
 }

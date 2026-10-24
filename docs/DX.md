@@ -73,7 +73,8 @@ providers / infrastructure
 | 文章 | Payload `posts` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | 项目 | Payload `projects` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | FAQ/标签/站点设置 | Payload Collections/Global | PostgreSQL | 仅 Schema、seed 和迁移进入 |
-| AI 临时生成结果 | 当前仅管理员浏览器会话 | 不持久化 | 否 |
+| AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 | 否 |
+| AI 保存的 Markdown 草稿 | Payload `posts` 草稿为权威；Markdown 为审阅副本 | 本地 `content/articles/`；生产 `/app/content-data/articles/` | 默认忽略正文 |
 | 待导入 Markdown | `content/inbox/` | 开发者本机 | 默认忽略 |
 | Markdown 导出 | `content/exports/` | 生成目录 | 默认忽略 |
 | Quartz 公开副本 | `content/public-garden/` | 白名单构建目录 | 默认忽略，独立发布 |
@@ -84,6 +85,8 @@ providers / infrastructure
 ### 文章规则
 
 - 后台创建、AI 生成或 Markdown 导入都先进入 `draft`。
+- AI 调用按管理员和 UTC 自然日计数，默认上限为 20，可用 `AI_DAILY_LIMIT` 调整；成功与失败调用都计入记录和额度。
+- AI 生成成功后不会自动写入文章。管理员必须显式点击“保存草稿”，系统才同时创建 Payload draft 和 Markdown 工作副本。
 - 发布条件：事实、来源、版权、隐私和 SEO 均已人工检查。
 - URL 使用稳定 `slug`；修改标题不自动修改已发布 slug。
 - 正文不保存临时签名 URL；外部来源保存 canonical URL 和来源说明。
@@ -93,6 +96,8 @@ providers / infrastructure
 ### Markdown 文件规则
 
 - UTF-8、LF 换行、文件名使用小写英文 slug。
+- AI 草稿统一存放为 `content/articles/<slug>.md`；生产容器映射到持久卷 `/app/content-data/articles/<slug>.md`。
+- `content/articles/` 不承担发布控制。公开读取只认 Payload `posts` 中 `_status=published` 的记录。
 - Front Matter 参考 `content/templates/article.md`。
 - 不允许内嵌 base64 图片、脚本、iframe 或本机绝对路径。
 - 附件使用逻辑引用，导入时由 Media/Storage 服务生成稳定 ID。

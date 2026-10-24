@@ -39,10 +39,12 @@ export type GeneratedDraft = {
 }
 
 export type GenerationResult = {
+  generationId: number | string
   provider: ProviderName
   model: string
   promptVersion: 'article-writer-v1'
   draft: GeneratedDraft
+  usage: { limit: number; used: number; remaining: number }
 }
 
 export class AIError extends Error {
@@ -52,6 +54,8 @@ export class AIError extends Error {
       | 'VALIDATION_ERROR'
       | 'PROVIDER_UNAVAILABLE'
       | 'RATE_LIMITED'
+      | 'GENERATION_NOT_FOUND'
+      | 'DRAFT_ALREADY_SAVED'
       | 'GENERATION_FAILED',
     message: string,
     public readonly status: number,

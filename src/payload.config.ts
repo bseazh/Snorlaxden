@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
+import { AIGenerations } from './collections/AIGenerations'
 import { Media } from './collections/Media'
 import { FAQItems } from './collections/FAQItems'
 import { Posts } from './collections/Posts'
@@ -24,7 +25,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Tags, Posts, Projects, FAQItems],
+  collections: [Users, Media, Tags, Posts, Projects, FAQItems, AIGenerations],
   globals: [SiteSettings],
   bodyParser: {
     limits: {

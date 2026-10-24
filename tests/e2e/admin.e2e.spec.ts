@@ -44,6 +44,7 @@ test.describe('Admin Panel', () => {
       await route.fulfill({
         contentType: 'application/json',
         json: {
+          generationId: 101,
           provider: 'deepseek',
           model: 'deepseek-chat',
           promptVersion: 'article-writer-v1',
@@ -56,7 +57,14 @@ test.describe('Admin Panel', () => {
             suggestedTags: ['测试'],
             disclosure: { aiAssisted: true },
           },
+          usage: { limit: 20, used: 1, remaining: 19 },
         },
+      })
+    })
+    await page.route('**/api/internal/ai/draft/save', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        json: { markdownPath: 'content/articles/ai-test-draft.md', postId: 202, slug: 'ai-test-draft', status: 'draft' },
       })
     })
 
@@ -67,5 +75,9 @@ test.describe('Admin Panel', () => {
     await expect(page.getByRole('heading', { name: '测试生成的待审核文章' })).toBeVisible()
     await expect(page.getByText('活动发生在什么时候？')).toBeVisible()
     await expect(page.getByText('不会自动发布')).toBeVisible()
+    await page.fill('input[pattern]', 'ai-test-draft')
+    await page.getByRole('button', { name: '保存草稿' }).click()
+    await expect(page.getByText('草稿已保存')).toBeVisible()
+    await expect(page.getByText('content/articles/ai-test-draft.md')).toBeVisible()
   })
 })

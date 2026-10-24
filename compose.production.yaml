@@ -45,10 +45,13 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file: .env
+    environment:
+      CONTENT_ARTICLE_DIR: /app/content-data/articles
     ports:
       - "127.0.0.1:3999:3000"
     volumes:
       - media_data:/app/media
+      - content_data:/app/content-data
     depends_on:
       seed:
         condition: service_completed_successfully
@@ -61,3 +64,4 @@ networks:
 volumes:
   postgres_data:
   media_data:
+  content_data:

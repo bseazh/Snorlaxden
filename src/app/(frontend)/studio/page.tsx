@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { AIWritingStudio } from '@/components/AIWritingStudio'
-import { getProviderAvailability } from '@/modules/ai'
+import { getDailyUsage, getProviderAvailability } from '@/modules/ai'
 
 export const metadata: Metadata = { title: 'AI 写作工作台', robots: { index: false, follow: false } }
 
@@ -21,7 +21,7 @@ export default async function StudioPage() {
         <div><p className="eyebrow">ADMIN · AI LAB</p><h1>写作工作台</h1></div>
         <Link className="text-link" href="/admin">返回内容后台</Link>
       </header>
-      <AIWritingStudio availability={getProviderAvailability()} />
+      <AIWritingStudio availability={getProviderAvailability()} initialUsage={await getDailyUsage(payload, user.id)} />
     </div>
   )
 }

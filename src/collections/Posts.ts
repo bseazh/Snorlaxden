@@ -51,6 +51,7 @@ export const Posts: CollectionConfig = {
     },
     { name: 'author', type: 'relationship', relationTo: 'users' },
     { name: 'aiDisclosure', type: 'checkbox', defaultValue: false },
+    { name: 'aiGeneration', type: 'relationship', relationTo: 'ai-generations' },
     { name: 'originalUrl', type: 'text' },
     seoFields,
   ],
@@ -62,4 +63,3 @@ export const Posts: CollectionConfig = {
     maxPerDoc: 30,
   },
 }
-

@@ -117,7 +117,7 @@ pnpm dev:db:down
 | `DEEPSEEK_MODEL` | DeepSeek 模型，可按账号权限调整 | 已配置 |
 | `AI_*_ENABLED` | AI 能力开关 | 模板默认关闭，生产仅启用文本试运行 |
 
-AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化待审核草稿。工作台不会自动保存或发布；生成记录、额度限制和一键存为 Payload 草稿将在试运行效果确认后实现。
+AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化内容。每次调用都会写入仅管理员可见的 `ai-generations` 记录，并按管理员限制每日调用次数（`AI_DAILY_LIMIT`，默认 20）。成功结果只能由管理员点击“保存草稿”后写入 Payload 和 Markdown；系统没有自动发布路径。
 
 官方 API 文档：
 
@@ -164,6 +164,8 @@ docker compose -f compose.production.yaml up -d --build
 | 数据 | 权威位置 | 当前物理位置 |
 |---|---|---|
 | 正式文章 | Payload `posts` | PostgreSQL |
+| AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
+| AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
 | 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |
 | 待导入 Markdown | 非权威工作副本 | `content/inbox/`，默认不进 Git |
 | Markdown 导出 | 生成产物 | `content/exports/`，默认不进 Git |
@@ -172,7 +174,7 @@ docker compose -f compose.production.yaml up -d --build
 | 构建期公开图片 | Git 管理的静态资产 | `public/images/` |
 | AI Prompt | 版本化代码 | `src/modules/ai/prompts/` |
 
-文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；Markdown 只作为导入或导出格式。对象存储尚未启用，未来通过 Storage Adapter 迁移到腾讯云 COS 或其他 S3-compatible 服务。
+文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。生产目录由 `content_data` Docker volume 持久化。对象存储尚未启用，未来通过 Storage Adapter 迁移到腾讯云 COS 或其他 S3-compatible 服务。
 
 ## 质量检查
 
@@ -193,6 +195,7 @@ src/modules/                 AI、内容等业务模块
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区
+content/articles/            AI 保存的 Markdown 草稿工作副本
 tests/                       集成测试与端到端测试
 docs/DX.md                   开发、内容、媒体和对象存储标准
 docs/spec/                   v1.0 产品、架构、模块与验收规格

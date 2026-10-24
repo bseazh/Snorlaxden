@@ -11,11 +11,12 @@ export default async function HomePage() {
   ])
   return <>
     <section className="hero-band">
-      <div className="shell hero-grid">
+      <Image alt="何海钊在现场分享人工智能实践" className="hero-image" fill priority sizes="100vw" src="/images/hehaizhao-portrait.jpg" />
+      <div className="hero-overlay" aria-hidden="true" />
+      <div className="shell hero-inner">
         <div className="hero-copy"><p className="eyebrow">AI RESEARCH · PRACTICE · EDUCATION</p><h1>{settings.displayName}</h1><p className="hero-role">{settings.roleTitle}</p><p className="hero-tagline">{settings.tagline}</p><div className="action-row"><Link className="button primary" href="/projects">查看项目</Link><Link className="button secondary" href="/about">了解我</Link></div></div>
-        <figure className="portrait-frame"><Image alt="何海钊个人形象照" fill priority sizes="(max-width: 760px) 92vw, 38vw" src="/images/hehaizhao-portrait.jpg" /><figcaption>人工智能硕士 · 医疗科研 AI 实践者</figcaption></figure>
       </div>
-      <div className="shell stat-strip" aria-label="经历数据"><div><strong>30+</strong><span>黑客松与 AI 实践活动</span></div><div><strong>20+</strong><span>百强医院科研 AI 培训</span></div><div><strong>ICPC / CCPC</strong><span>区域赛铜牌</span></div><div><strong>全国一等奖</strong><span>蓝桥杯 B 组</span></div></div>
+      <div className="hero-stats"><div className="shell stat-strip" aria-label="经历数据"><div><strong>30+</strong><span>黑客松与 AI 实践活动</span></div><div><strong>20+</strong><span>百强医院科研 AI 培训</span></div><div><strong>ICPC / CCPC</strong><span>区域赛铜牌</span></div><div><strong>全国一等奖</strong><span>蓝桥杯 B 组</span></div></div></div>
     </section>
     <section className="section-band"><div className="shell section-heading"><div><p className="eyebrow">SELECTED WORK</p><h2>把想法做成可验证的系统</h2></div><Link className="text-link" href="/projects">全部项目</Link></div><div className="shell"><ProjectList projects={projects} /></div></section>
     <section className="section-band journal-band"><div className="shell section-heading"><div><p className="eyebrow">FIELD NOTES</p><h2>文章与实践笔记</h2></div><Link className="text-link" href="/journal">全部文章</Link></div><div className="shell"><PostList posts={posts} /></div></section>

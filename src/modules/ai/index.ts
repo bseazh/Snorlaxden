@@ -1,5 +1,6 @@
-export { generateArticleDraft } from './application/generate-article-draft'
+export { generateAndRecordArticleDraft, getDailyUsage, readGeneratedDraft } from './application/generation-service'
+export { saveGenerationAsDraft } from './application/save-generation-as-draft'
 export { AIError } from './domain/types'
-export type { GenerationResult, ProviderName } from './domain/types'
+export type { GeneratedDraft, GenerationResult, ProviderName } from './domain/types'
 export { validateDraftRequest } from './domain/validation'
 export { getProviderAvailability } from './providers/registry'

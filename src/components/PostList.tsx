@@ -9,8 +9,7 @@ export function PostList({ posts }: { posts: Post[] }) {
     <article className="post-row" key={post.id}>
       <time dateTime={post.publishedAt ?? post.createdAt}>{dateFormatter.format(new Date(post.publishedAt ?? post.createdAt))}</time>
       <div><h3><Link href={`/journal/${post.slug}`}>{post.title}</Link></h3><p>{post.summary}</p></div>
-      <Link className="text-link" href={`/journal/${post.slug}`}>阅读全文</Link>
+      <Link className="text-link" href={`/journal/${post.slug}`} aria-label={`阅读 ${post.title}`}>阅读 →</Link>
     </article>
   ))}</div>
 }
-
