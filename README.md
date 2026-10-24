@@ -14,7 +14,8 @@ Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与
 - Payload CMS `3.91.0`
 - PostgreSQL `17`
 - Docker Compose
-- Quartz：Sprint 3 引入，不直接读取私人 Obsidian Vault
+- Quartz 5：Sprint 3 借鉴其公开知识花园能力，不直接读取私人 Obsidian Vault
+- Memos：仅借鉴时间线、标签、可见性和快速记录交互，不额外部署其 Go 服务
 
 依赖使用精确版本和 lockfile。Payload `3.92.0` 已提高 Node 最低版本，本项目暂时锁定 `3.91.0`，升级前必须重新执行完整检查。
 
@@ -156,3 +157,7 @@ infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片�
 - 每次 schema 变更必须生成迁移，并提供备份与回滚方案。
 
 完整需求从 [规格入口](docs/spec/README.md) 开始阅读。
+
+## 参考项目与演进原则
+
+本地的 `../quartz-5` 和 `../memos-main` 是后续迭代的参考实现。本站不重复造 Markdown、双链、搜索、时间线等已有成熟设计，也不会直接拼装两套完整产品。当前优先保持基础内容站、后台权限与发布流程稳定；可复用能力按照 [TODO.md](TODO.md) 的 Sprint 2/3 清单逐项移植、测试和上线。
