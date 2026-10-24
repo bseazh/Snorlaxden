@@ -25,6 +25,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build-time values only. Runtime secrets are injected by Compose and never copied into the image.
+ENV DATABASE_URL=postgres://build:build@db:5432/build
+ENV PAYLOAD_SECRET=build-only-placeholder-not-used-at-runtime
+ENV NEXT_PUBLIC_SERVER_URL=https://blog.snorlaxden.fun
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.

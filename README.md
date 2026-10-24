@@ -125,6 +125,7 @@ docs/spec/                   v1.0 产品、架构、模块与验收规格
 compose.yaml                 本地 PostgreSQL
 compose.production.yaml      服务器 Web + PostgreSQL
 Dockerfile                   生产应用镜像
+infra/Caddyfile.server       服务器现有 Caddy 的完整可审计配置
 .env.example                 不含真实密钥的变量模板
 ```
 
