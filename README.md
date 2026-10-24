@@ -2,7 +2,9 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-当前阶段为 **Sprint 0 工程脚手架**。仓库已经具备 Next.js、Payload CMS、PostgreSQL、本地 Docker 数据库、生产容器骨架和 CI。内容模型、公开页面、Quartz 花园与 AI Provider 将按 `docs/spec/04-delivery/42-AGENT-HANDOFF.md` 逐步实现。
+**Sprint 0 已完成并部署**。项目现已进入 **Sprint 1：核心内容与页面（P0）**，下一项工作是 `ISSUE-002`：先完成管理员权限与 published-only 公开读取过滤，再实现内容模型和公开页面。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+
+当前生产骨架已运行在 https://blog.snorlaxden.fun；页面仍是 Payload 初始模板，正式内容模型和数字花园界面将在 Sprint 1 中替换。
 
 ## 技术栈
 
@@ -124,6 +126,7 @@ pnpm build
 src/                         Next.js 与 Payload 源码
 tests/                       集成测试与端到端测试
 docs/spec/                   v1.0 产品、架构、模块与验收规格
+TODO.md                      当前 Sprint、任务依赖与验收清单
 compose.yaml                 本地 PostgreSQL
 compose.production.yaml      服务器 Web + PostgreSQL
 Dockerfile                   生产应用镜像
