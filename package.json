@@ -5,12 +5,15 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "env -u TURBOPACK -u __NEXT_PRIVATE_STANDALONE_CONFIG -u __NEXT_PRIVATE_ORIGIN cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "dev": "env -u TURBOPACK -u __NEXT_PRIVATE_STANDALONE_CONFIG -u __NEXT_PRIVATE_ORIGIN cross-env PORT=3000 NODE_OPTIONS=--no-deprecation next dev",
+    "devsafe": "rm -rf .next && pnpm dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
+    "typecheck": "tsc --noEmit",
+    "dev:db": "docker compose up -d db",
+    "dev:db:down": "docker compose down",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
@@ -18,18 +21,18 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
-    "@payloadcms/next": "3.92.0",
-    "@payloadcms/richtext-lexical": "3.92.0",
-    "@payloadcms/ui": "3.92.0",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
     "next": "16.3.3",
-    "payload": "3.92.0",
+    "payload": "3.91.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "0.35.4",
-    "@payloadcms/db-postgres": "3.92.0"
+    "@payloadcms/db-postgres": "3.91.0"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
@@ -48,7 +51,7 @@
     "vitest": "4.0.18"
   },
   "engines": {
-    "node": "^22.23.4 || >=24.22.1",
+    "node": ">=20.18.1",
     "pnpm": "^9 || ^10 || ^11"
   },
   "pnpm": {
