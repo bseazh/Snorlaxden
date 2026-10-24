@@ -19,7 +19,7 @@
 
 ## 当前工作｜Sprint 1 核心内容与页面
 
-### ISSUE-002｜认证与公开访问过滤
+### [ISSUE-002｜认证与公开访问过滤](https://github.com/bseazh/Snorlaxden/issues/1)
 
 这是下一项要实施的工作，是后续内容开发的安全前置条件。
 
@@ -31,7 +31,7 @@
 
 完成标准：公开 API 无法读取用户、草稿或私有字段；管理员登录和后台操作保持正常。
 
-### ISSUE-003｜内容模型、草稿和发布流程
+### [ISSUE-003｜内容模型、草稿和发布流程](https://github.com/bseazh/Snorlaxden/issues/2)
 
 依赖：ISSUE-002。
 
@@ -45,7 +45,7 @@
 
 完成标准：后台可以完成文章草稿到发布、撤回，以及项目 CRUD；撤回内容立即停止公开访问。
 
-### ISSUE-004｜数字花园公开站
+### [ISSUE-004｜数字花园公开站](https://github.com/bseazh/Snorlaxden/issues/3)
 
 依赖：ISSUE-003。
 
@@ -106,4 +106,3 @@
 - 不在 Sprint 1 接入 AI 或消耗模型 API
 - 不做未经授权的视频下载、字幕抓取或伪造分析
 - 不做公开注册、多人社区、RAG、自动发布或 Obsidian 双向同步
-
