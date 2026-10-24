@@ -21,6 +21,7 @@ RUN \
 # Database operations use the full dependency tree and source configuration.
 FROM deps AS operations
 WORKDIR /app
+ENV NODE_ENV=production
 COPY . .
 
 FROM operations AS migrator
