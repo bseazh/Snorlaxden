@@ -35,19 +35,13 @@ date: 2026-10-24
 9. **撤回**：重新全量构建干净目录，不保留旧的 HTML、静态附件、旧地图；处理 CDN/反代缓存。
 10. 日志仅记录数量、路径指纹及必要问题，避免把私密内容打印到公共 CI 日志。
 
-## 发布命令契约（计划实现，而非已有命令）
+## 已实现的导出契约
 
-```bash
-node scripts/export-public-notes.mjs \
-  --vault /secure/local/vault \
-  --output ./garden-public-content \
-  --dry-run
-# 人工核对 manifest 后才运行正式构建/发布
-```
+管理员通过 `POST /api/internal/public-garden/export` 触发导出。服务端只读取 `PUBLIC_GARDEN_SOURCE_DIR`、`PUBLIC_GARDEN_MANIFEST` 和 `PUBLIC_GARDEN_OUTPUT_DIR`，请求正文不能指定路径。manifest schema 示例位于 `content/templates/public-garden-manifest.json`。
 
-- `--dry-run` 不修改目标文件；`--force` 只允许清理本项目管理的临时目录。
-- 若本地 Vault 不在服务器，则采用本地导出→Git 推送**筛选后文件**→CI 构建，不让服务器读取私有 Vault。
-- 初期可手动触发发布，后期再加 CI webhook；更安全、易核验。
+- 导出器只替换带自身 marker 的目录；首次目标目录必须不存在或仅含项目自带 `.gitignore`。
+- 若本地 Vault 不在服务器，应在本机运行应用和导出端点，再把**筛选后文件**交给独立 Quartz 构建流程，不能上传私人 Vault。
+- ISSUE-008 接入 Quartz 前人工核对生成的 `manifest.json`；后续 CI 也只能接收筛选后的公开副本。
 
 ## Quartz 集成
 

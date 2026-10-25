@@ -41,6 +41,10 @@ src/
 │       ├── storage.ts        Local/COS 私有存储 Adapter
 │       ├── source-material-service.ts 上传、去重和元数据落库
 │       └── markdown-export.ts 私有 Markdown 导出
+│   └── public-garden/
+│       ├── domain.ts         白名单、生成 manifest 和稳定错误类型
+│       ├── exporter.ts       路径校验、Markdown 净化和原子全量导出
+│       └── payload-export.ts 管理员操作与审计适配
 ├── collections/           Payload Collection Schema
 ├── globals/               Payload Global Schema
 ├── access/                Payload 访问控制
@@ -124,6 +128,17 @@ providers / infrastructure
 - 私有导出正文固定分为“个人笔记、来源说明、授权说明、已授权文字”四区；空区保留明确标记，禁止把个人推断伪装成来源原文。
 - 已存在的同名导出文件不得静默覆盖；内容变化时生成 `.conflict-<timestamp>.md` 供人工合并。
 
+### 公开花园导出规则
+
+- 私人 Vault 必须位于 Git 仓库和服务器之外；Quartz 只能读取 `content/public-garden/` 的生成副本。
+- 实际白名单 manifest 视为本地受控配置，不提交 Git。仓库中的 `content/templates/public-garden-manifest.json` 只用于说明 schema。
+- 笔记必须同时满足 manifest 点名、`publish: true`、`visibility: public`；未公开笔记引用统一降级为不含原标题和路径的 `[非公开笔记]`。
+- 附件必须在 manifest 逐项声明来源、公开目标、授权依据和预期 SHA-256；内容 magic bytes 只允许 PDF、JPEG、PNG、WebP、AVIF。
+- 拒绝 `..`、绝对路径、反斜杠路径、隐藏目录、不安全协议、原始 HTML 文件引用、symlink 和引用式本地 Markdown 链接。
+- 只保留 `title`、`publish`、`visibility`、`description`、`date`、`tags` 公开 frontmatter，避免自定义私有字段进入副本。
+- 导出先写同磁盘临时目录，生成文件 checksum、来源内容指纹、附件引用和授权 manifest，再原子替换旧目录；公开 manifest 不保存私人 Vault 路径，失败保留最后一个有效版本。
+- 全量替换负责撤回清理，不做增量追加。审计失败时恢复旧目录；审计元数据只含数量、错误码和清理数量，不含正文或私人来源路径。
+
 ### 资源库规则
 
 - `resources` 是收藏、个人短记和来源关系的权威位置，实际数据只进入 PostgreSQL，不保存到仓库中的 `md` 目录。
@@ -145,7 +160,7 @@ providers / infrastructure
 - 私有对象只通过 `/api/internal/source-materials/:id/download` 下载；先验证管理员，再按数据库 object key 读取。成功、拒绝与失败响应都使用 `private, no-store`。
 - 上传只接受文件头与声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件最多 10MB；SHA-256 唯一索引和上传前查询共同阻止重复文件。
 - 静态个人形象等公开构建资产：`public/images/`。
-- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，但 Region、SecretId、SecretKey 尚未提供；生产继续使用 local，不能把 Bucket 名或环境变量模板误认为 COS 已接通。
+- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；CAM 凭证或 CVM 实例角色尚未提供，生产继续使用 local，不能把 Bucket 和 Region 配置误认为 COS 已接通。
 
 ### 目标 Adapter
 
@@ -189,12 +204,12 @@ private/source-materials/2026/10/019f....pdf
 STORAGE_DRIVER=local|cos
 STORAGE_LOCAL_DIR=.private-files
 COS_BUCKET=digital-1486267453
-COS_REGION=
+COS_REGION=ap-guangzhou
 COS_SECRET_ID=
 COS_SECRET_KEY=
 ```
 
-Bucket 名可进入模板；Region 与真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置时保持 `STORAGE_DRIVER=local`。
+Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置或官方 Adapter 尚未通过真实读写删回归时保持 `STORAGE_DRIVER=local`。
 
 ### 备份与迁移
 

@@ -31,12 +31,16 @@
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.468.0",
     "next": "16.3.3",
     "payload": "3.91.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "sharp": "0.35.4"
+    "remark-parse": "^11.0.0",
+    "sharp": "0.35.4",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",

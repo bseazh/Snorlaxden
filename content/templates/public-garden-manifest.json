@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "notes": [
+    {
+      "source": "06-Public/example.md",
+      "output": "example.md"
+    }
+  ],
+  "attachments": [
+    {
+      "source": "Assets/owned-image.png",
+      "output": "assets/owned-image.png",
+      "authorization": "owned",
+      "sha256": "replace-with-64-character-lowercase-sha256"
+    }
+  ]
+}

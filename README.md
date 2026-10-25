@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0、Sprint 1 和 Sprint 2 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库，以及受保护的来源材料上传和 Markdown 导出。下一阶段是 ISSUE-007：公开花园白名单导出。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0、Sprint 1、Sprint 2 和 ISSUE-007 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库，以及受保护的私有材料和公开花园白名单导出。下一阶段是 ISSUE-008：Quartz 构建与知识花园体验。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -62,8 +62,11 @@ flowchart TB
   AIModule --> DeepSeek[DeepSeek API]
   AIModule --> StepFun[StepFun API]
 
-  Payload -. 白名单导出 .-> Export[content/public-garden]
-  Export -. Sprint 3 .-> Quartz[Quartz 静态知识花园]
+  PrivateVault[本机私人 Vault] --> Whitelist[显式白名单 manifest]
+  Whitelist --> GardenExporter[Public Garden Exporter]
+  GardenExporter --> Export[content/public-garden]
+  Payload -. 已发布内容需显式导出 .-> Whitelist
+  Export -. ISSUE-008 .-> Quartz[Quartz 静态知识花园]
 ```
 
 关键边界：Next.js 负责页面和 HTTP；Payload 负责认证、内容模型与访问控制；PostgreSQL 是正式结构化内容的唯一真源；上传文件通过 Storage Adapter 管理；AI 只生成待审核草稿；Quartz 未来只读取白名单导出副本。
@@ -136,7 +139,11 @@ pnpm dev:db:down
 | `STORAGE_DRIVER` | `local` 或 `cos` 私有存储选择 | 当前必须为 `local` |
 | `STORAGE_LOCAL_DIR` | 本地私有原件目录 | 已使用；生产为 `/app/private-files` |
 | `COS_BUCKET` | 腾讯云 COS Bucket | 已预留 `digital-1486267453` |
-| `COS_REGION`、`COS_SECRET_ID`、`COS_SECRET_KEY` | COS 区域和服务端凭证 | 尚未提供，禁止提交 Git |
+| `COS_REGION` | COS 地域 | 已确认 `ap-guangzhou` |
+| `COS_SECRET_ID`、`COS_SECRET_KEY` | COS 服务端凭证 | 尚未提供，禁止提交 Git |
+| `PUBLIC_GARDEN_SOURCE_DIR` | 私人 Vault 或受控 Markdown 来源根目录 | 只在执行导出的环境配置，不进入 Git |
+| `PUBLIC_GARDEN_MANIFEST` | 实际白名单 manifest 的路径 | 只在执行导出的环境配置，不进入 Git |
+| `PUBLIC_GARDEN_OUTPUT_DIR` | Quartz 唯一可读的公开副本目录 | 默认 `content/public-garden` |
 
 AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化内容。每次调用都会写入仅管理员可见的 `ai-generations` 记录，并按管理员限制每日调用次数（`AI_DAILY_LIMIT`，默认 20）。成功结果只能由管理员点击“保存草稿”后写入 Payload 和 Markdown；系统没有自动发布路径。
 
@@ -203,7 +210,15 @@ docker compose -f compose.production.yaml up -d --build
 
 文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。来源材料导出固定标记 `visibility: private`，并区分个人笔记、来源说明、授权说明和已授权文字。生产目录由 `content_data` Docker volume 持久化。
 
-腾讯云 COS Bucket `digital-1486267453` 已登记，但 Bucket 名不足以安全接入：还需要准确 Region 和最小权限 CAM 凭证。当前生产继续使用独立私有卷；代码已保留 `COSPrivateStorageAdapter` 边界，配置和官方 SDK 回归完成前不会切换，也不会生成可公开直链。
+腾讯云 COS Bucket `digital-1486267453` 和 Region `ap-guangzhou` 已登记，但仍缺少最小权限 CAM 凭证或 CVM 实例角色。当前生产继续使用独立私有卷；代码已保留 `COSPrivateStorageAdapter` 边界，凭证、官方 SDK 实现和真实读写删回归完成前不会切换，也不会生成可公开直链。
+
+## 公开花园白名单导出
+
+ISSUE-007 使用三重公开条件：来源路径必须进入显式 manifest、笔记 frontmatter 必须同时声明 `publish: true` 和 `visibility: public`、每个附件必须单独声明授权依据及预期 SHA-256。实际私人 Vault 和实际 manifest 均不得提交 Git；可从 `content/templates/public-garden-manifest.json` 建立本机副本。
+
+管理员端点 `POST /api/internal/public-garden/export` 只读取服务端环境变量中的固定路径，不接受请求方提交文件路径。导出器会移除非公开 frontmatter、把未公开笔记引用降级成不含标题的普通文字、拒绝未授权附件、危险协议、隐藏路径、路径穿越、原始 HTML 文件引用及 symlink。每次先生成全新临时目录和 `manifest.json`，审计成功后才保留原子切换结果；重新导出会删除撤回笔记和孤立附件。
+
+`content/public-garden/` 是 ISSUE-008 中 Quartz 唯一允许读取的目录。当前还没有 Quartz 页面，因此验收编号 T007 的“页面可见、公开双链正常”和 T009 的 URL/缓存撤回要在下一阶段完成。
 
 ## 质量检查
 
@@ -222,6 +237,7 @@ pnpm build
 src/app/                     Next.js 页面与 HTTP 边界
 src/modules/                 AI、内容、资源与审计等业务模块
 src/modules/source-materials/ 私有上传、存储、下载和 Markdown 导出
+src/modules/public-garden/  白名单校验、链接净化、原子公开导出与审计
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区

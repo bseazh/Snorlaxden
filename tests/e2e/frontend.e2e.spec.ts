@@ -12,6 +12,7 @@ test('rejects anonymous source material listing, upload, and Markdown export', a
   expect((await request.get('http://localhost:3000/api/source-materials')).status()).toBe(403)
   expect((await request.post('http://localhost:3000/api/internal/source-materials/upload', { multipart: {} })).status()).toBe(401)
   expect((await request.post('http://localhost:3000/api/internal/exports/markdown', { data: { id: 1, type: 'source-material' } })).status()).toBe(401)
+  expect((await request.post('http://localhost:3000/api/internal/public-garden/export')).status()).toBe(401)
 })
 
 test.describe('Public digital garden', () => {
