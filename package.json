@@ -6,7 +6,7 @@
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "build": "env -u TURBOPACK -u __NEXT_PRIVATE_STANDALONE_CONFIG -u __NEXT_PRIVATE_ORIGIN cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "build": "env -u TURBOPACK -u __NEXT_PRIVATE_STANDALONE_CONFIG -u __NEXT_PRIVATE_ORIGIN cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=2048\" next build",
     "dev": "env -u TURBOPACK -u __NEXT_PRIVATE_STANDALONE_CONFIG -u __NEXT_PRIVATE_ORIGIN cross-env PORT=3000 NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "rm -rf .next && pnpm dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
