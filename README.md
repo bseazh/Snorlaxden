@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0、Sprint 1 和 ISSUE-005 已完成，ISSUE-006 正在验收部署**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库，以及受保护的来源材料上传和 Markdown 导出。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0、Sprint 1 和 Sprint 2 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库，以及受保护的来源材料上传和 Markdown 导出。下一阶段是 ISSUE-007：公开花园白名单导出。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
