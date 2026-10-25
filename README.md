@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0 和 Sprint 1 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、首批项目与文章、响应式公开站和 SEO。当前先进行 **Sprint 4：AI 内容试运行**，效果确认后恢复 Sprint 2。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0、Sprint 1 和 ISSUE-005 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手，以及默认私有的第二知识仓库。当前继续进行 **Sprint 2：私有媒体与安全导出**。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -30,16 +30,20 @@ flowchart TB
   subgraph Web[应用层]
     Public[公开站页面]
     Studio[管理员 AI 工作台]
+    Library[管理员资源时间线]
     Routes[Route Handlers]
     Payload[Payload CMS]
   end
 
   Next --> Public
   Next --> Studio
+  Next --> Library
   Next --> Routes
   Routes --> Payload
   Public --> ContentModule[Content Module]
   ContentModule --> Payload
+  Library --> ResourceModule[Resources Module]
+  ResourceModule --> Payload
 
   Payload --> PostgreSQL[(PostgreSQL 17)]
   Payload --> Audit[(audit-logs / 操作审计)]
@@ -84,6 +88,7 @@ pnpm dev
 
 - 网站：`http://localhost:3000`
 - Payload 后台：`http://localhost:3000/admin`
+- 私人资源库：`http://localhost:3000/library`（未登录会跳转后台登录）
 
 第一次打开后台时创建本地管理员。开发账户和数据库不得直接用于生产环境。
 
@@ -172,6 +177,7 @@ docker compose -f compose.production.yaml up -d --build
 | 数据 | 权威位置 | 当前物理位置 |
 |---|---|---|
 | 正式文章 | Payload `posts` | PostgreSQL |
+| 私人资源、短记与来源关系 | Payload `resources` | PostgreSQL，仅管理员可见；入口 `/library` |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
@@ -200,7 +206,7 @@ pnpm build
 
 ```text
 src/app/                     Next.js 页面与 HTTP 边界
-src/modules/                 AI、内容等业务模块
+src/modules/                 AI、内容、资源与审计等业务模块
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区
@@ -220,7 +226,8 @@ infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片�
 ## 安全边界
 
 - 私人 Obsidian Vault 不进入本仓库或服务器；只发布白名单导出的副本。
-- Resource、SourceMaterial、AI 产物和 Media 默认私密。
+- Resource、SourceMaterial、AI 产物和 Media 默认私密；`resources.visibility=public` 目前仅表示公开候选，不提供匿名读取。
+- 资源 URL 仅保存 `http/https`，拒绝凭据、本机、内网、链路本地和云元数据目标；ISSUE-005 不会主动抓取外部地址。
 - 用户、内容和媒体写操作仅允许已登录管理员；公开读取在 Payload access 层过滤。
 - 文章和项目只有 `_status=published` 时对访客可见；撤回后详情返回 404。
 - 媒体仅允许 JPEG、PNG、WebP、AVIF，HTTP 上传限制为 10MB，默认私有。

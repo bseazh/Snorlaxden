@@ -32,6 +32,10 @@ src/
 │   └── content/
 │       ├── public-queries.ts 公开内容读取
 │       └── index.ts          模块公开 API
+│   └── resources/
+│       ├── domain.ts         类型、可见性和稳定错误码
+│       ├── normalize-resource-url.ts 安全 URL 规范化
+│       └── resource-service.ts 管理员收藏用例
 ├── collections/           Payload Collection Schema
 ├── globals/               Payload Global Schema
 ├── access/                Payload 访问控制
@@ -72,6 +76,7 @@ providers / infrastructure
 |---|---|---|---|
 | 文章 | Payload `posts` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | 项目 | Payload `projects` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
+| 资源、短记和来源关系 | Payload `resources` | PostgreSQL，仅管理员可见 | 仅 Schema、测试和迁移进入 |
 | FAQ/标签/站点设置 | Payload Collections/Global | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 | 否 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读 | 否 |
@@ -108,6 +113,16 @@ providers / infrastructure
 - 不允许内嵌 base64 图片、脚本、iframe 或本机绝对路径。
 - 附件使用逻辑引用，导入时由 Media/Storage 服务生成稳定 ID。
 - `content/inbox/` 只放本人有权处理的素材，导入完成后应清理。
+
+### 资源库规则
+
+- `resources` 是收藏、个人短记和来源关系的权威位置，实际数据只进入 PostgreSQL，不保存到仓库中的 `md` 目录。
+- 所有资源默认 `visibility=private`；`review` 表示待审核，`public` 只表示公开候选。ISSUE-005 没有匿名读取接口，也不会进入公开 AI 知识源。
+- `notes` 只保存个人判断；第三方原始描述放入 `sourceDescription`，两者禁止混写成“AI 已看过来源”的误导表达。
+- URL 只允许 `http:` 和 `https:`，禁止凭据、localhost、环回、内网、链路本地及云元数据目标。Bilibili、YouTube 使用平台 ID 生成 canonical URL 和唯一 `sourceKey`，其余网页按清理跟踪参数后的 URL 去重。
+- 仅保存 URL 时必须保持 `ingestStatus=saved_only` 与 `sourceAccess=url_only`，不得声称已经解析、观看或理解内容。
+- `/library` 与 `/api/internal/resources` 都必须验证管理员会话；资源创建、修改和删除写入审计日志，但日志不得包含私人笔记或来源正文。
+- PDF/图片文件、签名下载、对象存储和 Markdown 导出归 ISSUE-006，不能在资源 URL 收藏逻辑中暗中抓取或缓存。
 
 ## 4. 媒体与对象存储标准
 

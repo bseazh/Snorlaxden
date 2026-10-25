@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { FAQItems } from './collections/FAQItems'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
+import { Resources } from './collections/Resources'
 import { Tags } from './collections/Tags'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -26,7 +27,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Tags, Posts, Projects, FAQItems, AIGenerations, AuditLogs],
+  collections: [Users, Media, Tags, Posts, Projects, Resources, FAQItems, AIGenerations, AuditLogs],
   globals: [SiteSettings],
   bodyParser: {
     limits: {

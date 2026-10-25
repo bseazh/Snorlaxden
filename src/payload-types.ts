@@ -72,6 +72,7 @@ export interface Config {
     tags: Tag;
     posts: Post;
     projects: Project;
+    resources: Resource;
     'faq-items': FaqItem;
     'ai-generations': AiGeneration;
     'audit-logs': AuditLog;
@@ -88,6 +89,7 @@ export interface Config {
     tags: TagsSelect<false> | TagsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    resources: ResourcesSelect<false> | ResourcesSelect<true>;
     'faq-items': FaqItemsSelect<false> | FaqItemsSelect<true>;
     'ai-generations': AiGenerationsSelect<false> | AiGenerationsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -351,6 +353,35 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  title: string;
+  resourceType: 'note' | 'video' | 'book' | 'image' | 'activity' | 'link';
+  notes?: string | null;
+  sourceDescription?: string | null;
+  sourceUrl?: string | null;
+  canonicalUrl?: string | null;
+  sourceKey?: string | null;
+  sourceId: string;
+  platform?: ('bilibili' | 'youtube' | 'wechat_channels' | 'web') | null;
+  externalId?: string | null;
+  sourceAccess: 'url_only' | 'metadata' | 'user_supplied_text' | 'authorized_transcript' | 'self_owned_media';
+  ingestStatus: 'saved_only' | 'metadata_ready' | 'text_ready' | 'card_draft' | 'reviewed' | 'failed';
+  /**
+   * 公开候选不等于已发布；ISSUE-005 不提供公开资源读取接口。
+   */
+  visibility: 'private' | 'review' | 'public';
+  tags?: (number | Tag)[] | null;
+  relatedPosts?: (number | Post)[] | null;
+  relatedProjects?: (number | Project)[] | null;
+  capturedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faq-items".
  */
 export interface FaqItem {
@@ -523,6 +554,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'resources';
+        value: number | Resource;
       } | null)
     | ({
         relationTo: 'faq-items';
@@ -721,6 +756,31 @@ export interface ProjectsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources_select".
+ */
+export interface ResourcesSelect<T extends boolean = true> {
+  title?: T;
+  resourceType?: T;
+  notes?: T;
+  sourceDescription?: T;
+  sourceUrl?: T;
+  canonicalUrl?: T;
+  sourceKey?: T;
+  sourceId?: T;
+  platform?: T;
+  externalId?: T;
+  sourceAccess?: T;
+  ingestStatus?: T;
+  visibility?: T;
+  tags?: T;
+  relatedPosts?: T;
+  relatedProjects?: T;
+  capturedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

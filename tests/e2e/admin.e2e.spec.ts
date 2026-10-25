@@ -39,6 +39,25 @@ test.describe('Admin Panel', () => {
     await expect(editViewArtifact).toBeVisible()
   })
 
+  test('shows the protected resource timeline and explicit visibility', async () => {
+    await page.goto('http://localhost:3000/library')
+    await expect(page).toHaveURL('http://localhost:3000/library')
+    await expect(page.getByRole('heading', { name: '第二知识仓库' })).toBeVisible()
+    await expect(page.getByText('默认私有').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: '收藏' })).toBeVisible()
+    await expect(page.getByText('按收藏时间倒序')).toBeVisible()
+  })
+
+  test('keeps the private resource library usable on mobile', async () => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('http://localhost:3000/library')
+    const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }))
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
+    await expect(page.getByLabel('资源标题')).toBeVisible()
+    await expect(page.getByText('最近记录')).toBeVisible()
+    await page.setViewportSize({ width: 1280, height: 720 })
+  })
+
   test('can generate and review a structured AI draft', async () => {
     await page.route('**/api/internal/ai/draft', async (route) => {
       await route.fulfill({

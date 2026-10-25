@@ -1,6 +1,7 @@
-import * as migration_20261024_113020_sprint1_content from './20261024_113020_sprint1_content'
-import * as migration_20261024_124523_ai_generation_records from './20261024_124523_ai_generation_records'
-import * as migration_20261024_134849_audit_logs from './20261024_134849_audit_logs'
+import * as migration_20261024_113020_sprint1_content from './20261024_113020_sprint1_content';
+import * as migration_20261024_124523_ai_generation_records from './20261024_124523_ai_generation_records';
+import * as migration_20261024_134849_audit_logs from './20261024_134849_audit_logs';
+import * as migration_20261025_041929_issue005_resources from './20261025_041929_issue005_resources';
 
 export const migrations = [
   {
@@ -18,4 +19,9 @@ export const migrations = [
     down: migration_20261024_134849_audit_logs.down,
     name: '20261024_134849_audit_logs',
   },
-]
+  {
+    up: migration_20261025_041929_issue005_resources.up,
+    down: migration_20261025_041929_issue005_resources.down,
+    name: '20261025_041929_issue005_resources'
+  },
+];

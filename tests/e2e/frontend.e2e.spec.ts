@@ -55,4 +55,9 @@ test.describe('Public digital garden', () => {
     expect(response?.status()).toBe(404)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('还没有长出内容')
   })
+
+  test('redirects anonymous visitors away from the private resource library', async ({ page }) => {
+    await page.goto('http://localhost:3000/library')
+    await expect(page).toHaveURL(/\/admin\/login\?redirect=%2Flibrary/)
+  })
 })
