@@ -6,6 +6,8 @@
 
 DX（Developer Experience）标准的目标是让每个功能都有稳定的归属、数据只有一个权威来源、开发和生产可以用同一套规则验证。
 
+凭证位置、验证状态与轮换规则统一登记在 [凭证与外部服务登记](operations/CREDENTIALS.md)；真实值只能进入被 Git 忽略的 `.secrets/` 或权限为 `600` 的 `.env`。
+
 ## 1. 基本原则
 
 1. 按业务能力组织代码，不按“工具函数大杂烩”组织。
@@ -160,7 +162,7 @@ providers / infrastructure
 - 私有对象只通过 `/api/internal/source-materials/:id/download` 下载；先验证管理员，再按数据库 object key 读取。成功、拒绝与失败响应都使用 `private, no-store`。
 - 上传只接受文件头与声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件最多 10MB；SHA-256 唯一索引和上传前查询共同阻止重复文件。
 - 静态个人形象等公开构建资产：`public/images/`。
-- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；CAM 凭证或 CVM 实例角色尚未提供，生产继续使用 local，不能把 Bucket 和 Region 配置误认为 COS 已接通。
+- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；现有子账号 CSV 的 SecretId/SecretKey 为空，控制台登录未验证成功，生产继续使用 local，不能把控制台密码、Bucket 和 Region 配置误认为 COS 已接通。
 
 ### 目标 Adapter
 
@@ -210,6 +212,10 @@ COS_SECRET_KEY=
 ```
 
 Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置或官方 Adapter 尚未通过真实读写删回归时保持 `STORAGE_DRIVER=local`。
+
+本机导出的凭证 CSV 固定存放在 `.secrets/tencent-cloud/`，文件权限 `600`；`.secrets/` 必须同时被 `.gitignore`、`.dockerignore` 和 Next standalone 输出追踪排除。CSV 中的控制台 `Password` 不能填写到 `COS_SECRET_KEY`，只有腾讯云 API 密钥或实例角色临时凭证可供 SDK 使用。
+
+由于 Next standalone 可能主动复制 dotenv 文件，`pnpm build` 必须在编译后执行 `src/scripts/sanitize-standalone.mjs`，删除并复检产物内所有 `.env*` 和 `.secrets`；不能只依赖 `.dockerignore` 或 tracing exclude。
 
 ### 备份与迁移
 

@@ -4,6 +4,7 @@
 node_modules
 .env*
 !.env.example
+.secrets
 media
 playwright-report
 test-results

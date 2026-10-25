@@ -72,6 +72,7 @@ flowchart TB
 关键边界：Next.js 负责页面和 HTTP；Payload 负责认证、内容模型与访问控制；PostgreSQL 是正式结构化内容的唯一真源；上传文件通过 Storage Adapter 管理；AI 只生成待审核草稿；Quartz 未来只读取白名单导出副本。
 
 详细开发、模块、内容和对象存储标准见 [DX 文档](docs/DX.md)。
+外部服务凭证的非敏感登记、验证状态和轮换规则见 [凭证登记](docs/operations/CREDENTIALS.md)；真实凭证只保存在被 Git 忽略的 `.secrets/` 或 `.env` 中。
 
 ## 本地运行
 
@@ -140,7 +141,7 @@ pnpm dev:db:down
 | `STORAGE_LOCAL_DIR` | 本地私有原件目录 | 已使用；生产为 `/app/private-files` |
 | `COS_BUCKET` | 腾讯云 COS Bucket | 已预留 `digital-1486267453` |
 | `COS_REGION` | COS 地域 | 已确认 `ap-guangzhou` |
-| `COS_SECRET_ID`、`COS_SECRET_KEY` | COS 服务端凭证 | 尚未提供，禁止提交 Git |
+| `COS_SECRET_ID`、`COS_SECRET_KEY` | COS 服务端凭证 | 当前子账号 CSV 中为空，禁止提交 Git |
 | `PUBLIC_GARDEN_SOURCE_DIR` | 私人 Vault 或受控 Markdown 来源根目录 | 只在执行导出的环境配置，不进入 Git |
 | `PUBLIC_GARDEN_MANIFEST` | 实际白名单 manifest 的路径 | 只在执行导出的环境配置，不进入 Git |
 | `PUBLIC_GARDEN_OUTPUT_DIR` | Quartz 唯一可读的公开副本目录 | 默认 `content/public-garden` |
@@ -210,7 +211,7 @@ docker compose -f compose.production.yaml up -d --build
 
 文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。来源材料导出固定标记 `visibility: private`，并区分个人笔记、来源说明、授权说明和已授权文字。生产目录由 `content_data` Docker volume 持久化。
 
-腾讯云 COS Bucket `digital-1486267453` 和 Region `ap-guangzhou` 已登记，但仍缺少最小权限 CAM 凭证或 CVM 实例角色。当前生产继续使用独立私有卷；代码已保留 `COSPrivateStorageAdapter` 边界，凭证、官方 SDK 实现和真实读写删回归完成前不会切换，也不会生成可公开直链。
+腾讯云 COS Bucket `digital-1486267453` 和 Region `ap-guangzhou` 已登记。现有子账号 CSV 只有控制台凭证，`SecretId`、`SecretKey` 为空，控制台自动化登录也未验证成功，因此还不能测试 COS API。当前生产继续使用独立私有卷；详情见 [凭证登记](docs/operations/CREDENTIALS.md)。
 
 ## 公开花园白名单导出
 
@@ -245,6 +246,7 @@ content/articles/            AI 保存的 Markdown 草稿工作副本
 logs/                        日志统一入口、开发日志与受控运行日志导出
 tests/                       集成测试与端到端测试
 docs/DX.md                   开发、内容、媒体和对象存储标准
+docs/operations/CREDENTIALS.md 外部服务凭证的非敏感登记与验证状态
 docs/spec/                   v1.0 产品、架构、模块与验收规格
 TODO.md                      当前 Sprint、任务依赖与验收清单
 compose.yaml                 本地 PostgreSQL
