@@ -18,6 +18,20 @@ test.describe('Public digital garden', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('OpenClaw')
   })
 
+  test('opens the public assistant and answers a preset without an AI request', async ({ page }) => {
+    let assistantRequests = 0
+    page.on('request', (request) => {
+      if (request.url().includes('/api/public/assistant')) assistantRequests += 1
+    })
+    await page.goto('http://localhost:3000')
+    await page.getByRole('button', { name: '打开 AI 助手' }).click()
+    const dialog = page.getByRole('dialog', { name: '何海钊 AI 助手' })
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole('button', { name: '你目前主要研究什么？' }).click()
+    await expect(dialog.getByText('我关注大模型在医疗科研场景中的落地')).toBeVisible()
+    expect(assistantRequests).toBe(0)
+  })
+
   test('has no horizontal overflow on a mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('http://localhost:3000')
@@ -27,6 +41,10 @@ test.describe('Public digital garden', () => {
     }))
     expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
     await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible()
+    await page.getByRole('button', { name: '打开 AI 助手' }).click()
+    const dialogBox = await page.getByRole('dialog', { name: '何海钊 AI 助手' }).boundingBox()
+    expect(dialogBox?.x).toBeGreaterThanOrEqual(0)
+    expect(dialogBox?.width).toBeLessThanOrEqual(390)
   })
 
   test('returns not found for an unknown or unpublished slug', async ({ page }) => {

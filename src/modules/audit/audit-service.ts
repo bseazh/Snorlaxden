@@ -19,15 +19,15 @@ export type AuditEvent = {
   resourceType: string
 }
 
-function requestDetails(request?: AuditEvent['request']) {
+export function getAuditRequestDetails(request?: AuditEvent['request']) {
   const headers = request?.headers
   const requestId = request && 'requestId' in request && request.requestId
     ? request.requestId
     : headers?.get('x-request-id') || randomUUID()
   const forwarded = headers?.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const address = forwarded || headers?.get('x-real-ip')
+  const address = forwarded || headers?.get('x-real-ip') || 'unavailable'
   const salt = process.env.AUDIT_IP_HASH_SALT || process.env.PAYLOAD_SECRET || 'local-audit-salt'
-  const ipHash = address ? createHash('sha256').update(`${salt}:${address}`).digest('hex') : undefined
+  const ipHash = createHash('sha256').update(`${salt}:${address}`).digest('hex')
   return { ipHash, requestId }
 }
 
@@ -45,7 +45,7 @@ function safeMetadata(metadata?: AuditEvent['metadata']) {
 }
 
 export async function writeAuditLog(payload: Payload, event: AuditEvent) {
-  const { ipHash, requestId } = requestDetails(event.request)
+  const { ipHash, requestId } = getAuditRequestDetails(event.request)
   const payloadRequest = event.request && 'payload' in event.request ? event.request as PayloadRequest : undefined
 
   try {

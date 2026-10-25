@@ -3,7 +3,13 @@ import type { ProviderConfig } from '../providers/registry'
 
 type Message = { role: 'system' | 'user'; content: string }
 
-export async function createStructuredChatCompletion(config: ProviderConfig, messages: Message[]) {
+type CompletionOptions = {
+  maxTokens?: number
+  temperature?: number
+  timeoutMs?: number
+}
+
+export async function createStructuredChatCompletion(config: ProviderConfig, messages: Message[], options: CompletionOptions = {}) {
   if (!config.key) {
     throw new AIError('PROVIDER_UNAVAILABLE', `${config.label} 尚未配置服务端密钥。`, 503)
   }
@@ -17,10 +23,10 @@ export async function createStructuredChatCompletion(config: ProviderConfig, mes
         model: config.model,
         messages,
         response_format: { type: 'json_object' },
-        temperature: 0.5,
-        max_tokens: 4_000,
+        temperature: options.temperature ?? 0.5,
+        max_tokens: options.maxTokens ?? 4_000,
       }),
-      signal: AbortSignal.timeout(90_000),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 90_000),
     })
   } catch {
     throw new AIError('PROVIDER_UNAVAILABLE', `${config.label} 暂时无法连接。`, 503)
@@ -35,6 +41,6 @@ export async function createStructuredChatCompletion(config: ProviderConfig, mes
 
   const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> }
   const content = payload.choices?.[0]?.message?.content
-  if (!content) throw new AIError('GENERATION_FAILED', '模型没有返回文章草稿。', 502)
+  if (!content) throw new AIError('GENERATION_FAILED', '模型没有返回有效内容。', 502)
   return content
 }

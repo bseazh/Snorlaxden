@@ -94,6 +94,9 @@ providers / infrastructure
 - URL 使用稳定 `slug`；修改标题不自动修改已发布 slug。
 - 正文不保存临时签名 URL；外部来源保存 canonical URL 和来源说明。
 - AI 输出必须保留 `aiDisclosure=true`，且不能触发自动发布。
+- 公开 AI 助手只允许读取匿名访问控制可见的站点设置、已启用 FAQ、已发布文章和已发布项目；禁止使用 `overrideAccess` 获取知识上下文。
+- 公开助手的预设问答直接读取 FAQ，不调用模型；自由问答按 IP 摘要限额，回答必须返回站内公开引用。
+- 公开助手审计只保存问题 SHA-256、字符数、模型、引用数和结果，不保存完整问题、回答或对话历史。
 - 删除/撤回文章时，公开 API、sitemap、Quartz 副本和缓存必须一起失效。
 
 ### Markdown 文件规则
