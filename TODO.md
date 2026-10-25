@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-25
-> 当前里程碑：Sprint 2 已完成｜下一阶段 ISSUE-007 白名单 Markdown 导出
+> 当前里程碑：Sprint 3｜下一工作包 ISSUE-007 白名单 Markdown 导出与公开边界
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -82,7 +82,7 @@
 - [x] 新增 `docs/DX.md`，规范代码、内容、媒体、OSS/COS、测试和发布
 - [x] README 增加整体架构图和数据位置表
 
-### Sprint 4｜AI 内容试运行（当前阶段）
+### Sprint 4｜AI 内容试运行
 
 - [ ] [ISSUE-009：AI TextProvider 与文章草稿试运行](https://github.com/bseazh/Snorlaxden/issues/8)
 - [x] 建立 StepFun/DeepSeek 服务端 Provider，密钥不进入浏览器
@@ -140,7 +140,22 @@
 
 ### Sprint 3｜公开 Obsidian Quartz（P0）
 
-- [ ] [ISSUE-007：白名单 Markdown 导出与公开边界](https://github.com/bseazh/Snorlaxden/issues/6)
+#### 下一工作包｜[ISSUE-007：白名单 Markdown 导出与公开边界](https://github.com/bseazh/Snorlaxden/issues/6)
+
+- [ ] 定义公开导出 manifest 与白名单 schema，记录来源、目标路径、内容类型、校验和与导出时间
+- [ ] 仅导出已发布文章、明确标记公开的资源，以及具有公开授权的附件
+- [ ] 将 `content/public-garden/` 作为唯一公开构建输入，不读取 `content/exports/` 私有导出或私人 Obsidian Vault
+- [ ] 对 Markdown 内容和链接做规范化处理，拒绝路径穿越、隐藏文件、绝对路径与 symlink 越界
+- [ ] 为公开附件生成引用清单并核对 checksum，未授权或缺失附件必须让导出失败
+- [ ] 使用临时目录完成原子导出；内容撤回后删除对应公开副本与孤立附件
+- [ ] 记录导出、拒绝、撤回和失败审计，不记录私有正文或敏感文件内容
+- [ ] 增加单元与集成测试，验证 T007、T008、T010
+- [ ] 人工审阅 manifest 和泄漏检查结果后，再进入 ISSUE-008 Quartz 构建
+
+完成标准：公开构建目录只包含白名单允许的 Markdown 与附件；任何私密引用、越界路径或 symlink 均被阻断；撤回后不残留公开副本。
+
+#### 后续工作包
+
 - [ ] [ISSUE-008：Quartz 构建与知识花园体验](https://github.com/bseazh/Snorlaxden/issues/7)
 - [ ] 借鉴 Quartz 实现目录、wikilink、反向链接、标签索引和全文搜索
 - [ ] 知识图谱作为渐进增强项，先验证移动端可用性与性能再默认启用
