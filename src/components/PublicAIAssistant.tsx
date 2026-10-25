@@ -1,6 +1,6 @@
 'use client'
 
-import { Bot, ExternalLink, MessageCircle, Send, X } from 'lucide-react'
+import { Bot, ExternalLink, Send } from 'lucide-react'
 import Link from 'next/link'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 
@@ -16,7 +16,6 @@ type Message = {
 type ErrorResponse = { message?: string }
 
 export function PublicAIAssistant({ presets }: { presets: AssistantPreset[] }) {
-  const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   const [question, setQuestion] = useState('')
   const [remaining, setRemaining] = useState<number | null>(null)
@@ -29,8 +28,8 @@ export function PublicAIAssistant({ presets }: { presets: AssistantPreset[] }) {
   const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (open) inputRef.current?.focus()
-  }, [open])
+    inputRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: 'smooth' })
@@ -80,19 +79,11 @@ export function PublicAIAssistant({ presets }: { presets: AssistantPreset[] }) {
     }
   }
 
-  return <div className={`public-assistant ${open ? 'is-open' : ''}`}>
-    {open && <button aria-label="关闭 AI 助手" className="assistant-backdrop" onClick={() => setOpen(false)} type="button" />}
-    <button aria-expanded={open} aria-label={open ? '关闭 AI 助手' : '打开 AI 助手'} className="assistant-launcher" onClick={() => setOpen((value) => !value)} type="button">
-      {open ? <X aria-hidden="true" size={22} /> : <MessageCircle aria-hidden="true" size={23} />}
-      <span>{open ? '关闭' : '问问 AI'}</span>
-    </button>
-
-    {open && <section aria-label="何海钊 AI 助手" aria-modal="true" className="assistant-panel" role="dialog">
+  return <section aria-label="何海钊 AI 助手" className="assistant-workspace" role="region">
       <header className="assistant-header">
         <span className="assistant-avatar"><Bot aria-hidden="true" size={20} /></span>
         <div><strong>数字花园助手</strong><small>基于已公开内容回答</small></div>
         {remaining !== null && <span className="assistant-remaining">今日剩余 {remaining} 次</span>}
-        <button aria-label="关闭" onClick={() => setOpen(false)} type="button"><X aria-hidden="true" size={20} /></button>
       </header>
 
       <div aria-live="polite" className="assistant-messages" ref={messagesRef}>
@@ -115,6 +106,5 @@ export function PublicAIAssistant({ presets }: { presets: AssistantPreset[] }) {
         <button aria-label="发送问题" disabled={pending || question.trim().length < 2} type="submit"><Send aria-hidden="true" size={19} /></button>
       </form>
       <p className="assistant-disclosure">AI 可能出错，请以引用页面为准。</p>
-    </section>}
-  </div>
+    </section>
 }

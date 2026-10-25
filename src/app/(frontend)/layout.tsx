@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import React from 'react'
 
-import { PublicAIAssistant } from '@/components/PublicAIAssistant'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
-import { getFAQItems, getSiteSettings } from '@/modules/content'
+import { getSiteSettings } from '@/modules/content'
 
 import './styles.css'
 
@@ -18,7 +17,6 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, faqItems] = await Promise.all([getSiteSettings(), getFAQItems()])
-  const presets = faqItems.slice(0, 8).map((item) => ({ answer: item.answer, id: `faq-${item.id}`, question: item.question, relatedUrl: item.relatedUrl || undefined }))
-  return <html lang="zh-CN"><body><SiteHeader /><main>{children}</main><SiteFooter settings={settings} /><PublicAIAssistant presets={presets} /></body></html>
+  const settings = await getSiteSettings()
+  return <html lang="zh-CN"><body><SiteHeader /><main>{children}</main><SiteFooter settings={settings} /></body></html>
 }

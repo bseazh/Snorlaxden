@@ -20,7 +20,7 @@ export default async function HomePage() {
     </section>
     <section className="section-band"><div className="shell section-heading"><div><p className="eyebrow">SELECTED WORK</p><h2>把想法做成可验证的系统</h2></div><Link className="text-link" href="/projects">全部项目</Link></div><div className="shell"><ProjectList projects={projects} /></div></section>
     <section className="section-band journal-band"><div className="shell section-heading"><div><p className="eyebrow">FIELD NOTES</p><h2>文章与实践笔记</h2></div><Link className="text-link" href="/journal">全部文章</Link></div><div className="shell"><PostList posts={posts} /></div></section>
-    <section className="section-band"><div className="shell faq-layout"><div className="faq-intro"><p className="eyebrow">QUICK QUESTIONS</p><h2>先从几个问题认识我</h2><p>所有回答都由本人确认，并可在后台持续更新。</p></div><div className="faq-list">{faqItems.map((item) => <details key={item.id}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
+    <section className="section-band"><div className="shell faq-layout"><div className="faq-intro"><p className="eyebrow">QUICK QUESTIONS</p><h2>先从几个问题认识我</h2><p>所有回答都由本人确认，并可在后台持续更新。</p><Link className="button primary" href="/assistant">进入 AI 助手</Link></div><div className="faq-list">{faqItems.map((item) => <details key={item.id}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div></div></section>
     <section className="garden-band"><div className="shell garden-inner"><div><p className="eyebrow">DIGITAL GARDEN</p><h2>知识不只发布，也持续生长。</h2></div><p>这里收录项目复盘、技术路径、阅读与方法论。公开笔记系统正在按白名单和隐私边界建设。</p><Link className="button light" href="/garden">进入花园</Link></div></section>
   </>
 }

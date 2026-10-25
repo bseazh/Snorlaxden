@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const navItems = [
-  ['关于', '/about'], ['项目', '/projects'], ['文章', '/journal'], ['花园', '/garden'], ['联系', '/contact'],
+  ['关于', '/about'], ['项目', '/projects'], ['文章', '/journal'], ['花园', '/garden'], ['AI 助手', '/assistant'], ['联系', '/contact'],
 ] as const
 
 export function SiteHeader() {
