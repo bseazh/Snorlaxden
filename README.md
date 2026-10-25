@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0、Sprint 1 和 ISSUE-005 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手，以及默认私有的第二知识仓库。当前继续进行 **Sprint 2：私有媒体与安全导出**。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0、Sprint 1 和 ISSUE-005 已完成，ISSUE-006 正在验收部署**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库，以及受保护的来源材料上传和 Markdown 导出。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -44,6 +44,8 @@ flowchart TB
   ContentModule --> Payload
   Library --> ResourceModule[Resources Module]
   ResourceModule --> Payload
+  Library --> SourceModule[Source Materials Module]
+  SourceModule --> Payload
 
   Payload --> PostgreSQL[(PostgreSQL 17)]
   Payload --> Audit[(audit-logs / 操作审计)]
@@ -51,6 +53,9 @@ flowchart TB
   Payload --> Media[Media / Storage Adapter]
   Media --> Local[(当前：Docker media_data)]
   Media -. 后续切换 .-> ObjectStorage[(COS / OSS / S3)]
+  SourceModule --> PrivateStore[Private Storage Adapter]
+  PrivateStore --> PrivateVolume[(当前：private_media_data)]
+  PrivateStore -. 配置齐全后 .-> COS[(腾讯云 COS 私有 Bucket)]
 
   Studio --> AIModule[AI Module]
   Routes --> AIModule
@@ -127,6 +132,11 @@ pnpm dev:db:down
 | `PUBLIC_AI_ENABLED` | 是否开放访客自由问答 | 生产按需启用；预设问答不受影响 |
 | `PUBLIC_AI_DAILY_LIMIT` | 每个访客 IP 摘要的每日自由问答上限 | 已使用，默认 10 |
 | `AUDIT_IP_HASH_SALT` | 审计日志 IP 摘要盐 | 已使用，生产必须设置随机值 |
+| `CONTENT_EXPORT_DIR` | 私有 Markdown 导出根目录 | 已使用；生产为 `/app/content-data/exports` |
+| `STORAGE_DRIVER` | `local` 或 `cos` 私有存储选择 | 当前必须为 `local` |
+| `STORAGE_LOCAL_DIR` | 本地私有原件目录 | 已使用；生产为 `/app/private-files` |
+| `COS_BUCKET` | 腾讯云 COS Bucket | 已预留 `digital-1486267453` |
+| `COS_REGION`、`COS_SECRET_ID`、`COS_SECRET_KEY` | COS 区域和服务端凭证 | 尚未提供，禁止提交 Git |
 
 AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化内容。每次调用都会写入仅管理员可见的 `ai-generations` 记录，并按管理员限制每日调用次数（`AI_DAILY_LIMIT`，默认 20）。成功结果只能由管理员点击“保存草稿”后写入 Payload 和 Markdown；系统没有自动发布路径。
 
@@ -178,18 +188,22 @@ docker compose -f compose.production.yaml up -d --build
 |---|---|---|
 | 正式文章 | Payload `posts` | PostgreSQL |
 | 私人资源、短记与来源关系 | Payload `resources` | PostgreSQL，仅管理员可见；入口 `/library` |
+| 私有来源材料、授权与文件元数据 | Payload `source-materials` | PostgreSQL，仅管理员可见；入口 `/library` |
+| 私有 PDF/图片原件 | Private Storage Adapter | 本地 `.private-files/`；生产 `/app/private-files` volume |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
 | 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |
 | 待导入 Markdown | 非权威工作副本 | `content/inbox/`，默认不进 Git |
-| Markdown 导出 | 生成产物 | `content/exports/`，默认不进 Git |
+| 私有 Markdown 导出 | 生成产物 | `content/exports/resources/`、`content/exports/source-materials/`，默认不进 Git |
 | Quartz 公开副本 | 白名单构建产物 | `content/public-garden/`，默认不进 Git |
 | 上传媒体 | Payload `media` + 文件存储 | 本地 `media/`；生产 `/app/media` volume |
 | 构建期公开图片 | Git 管理的静态资产 | `public/images/` |
 | AI Prompt | 版本化代码 | `src/modules/ai/prompts/` |
 
-文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。生产目录由 `content_data` Docker volume 持久化。对象存储尚未启用，未来通过 Storage Adapter 迁移到腾讯云 COS 或其他 S3-compatible 服务。
+文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。来源材料导出固定标记 `visibility: private`，并区分个人笔记、来源说明、授权说明和已授权文字。生产目录由 `content_data` Docker volume 持久化。
+
+腾讯云 COS Bucket `digital-1486267453` 已登记，但 Bucket 名不足以安全接入：还需要准确 Region 和最小权限 CAM 凭证。当前生产继续使用独立私有卷；代码已保留 `COSPrivateStorageAdapter` 边界，配置和官方 SDK 回归完成前不会切换，也不会生成可公开直链。
 
 ## 质量检查
 
@@ -207,6 +221,7 @@ pnpm build
 ```text
 src/app/                     Next.js 页面与 HTTP 边界
 src/modules/                 AI、内容、资源与审计等业务模块
+src/modules/source-materials/ 私有上传、存储、下载和 Markdown 导出
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区
@@ -230,7 +245,8 @@ infra/Caddyfile.snorlaxden   合并到服务器现有 Caddy 的本站配置片�
 - 资源 URL 仅保存 `http/https`，拒绝凭据、本机、内网、链路本地和云元数据目标；ISSUE-005 不会主动抓取外部地址。
 - 用户、内容和媒体写操作仅允许已登录管理员；公开读取在 Payload access 层过滤。
 - 文章和项目只有 `_status=published` 时对访客可见；撤回后详情返回 404。
-- 媒体仅允许 JPEG、PNG、WebP、AVIF，HTTP 上传限制为 10MB，默认私有。
+- 来源材料仅允许文件头和声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件限制 10MB，并按 SHA-256 去重。
+- 私有原件不在 `public/`、`media/` 或 Markdown 目录；下载只走管理员接口，并返回 `private, no-store`、`nosniff` 和附件响应头。
 - AI 只生成草稿，发布必须由管理员确认。
 - 管理员登录、AI 调用、内容创建/修改/发布/撤回/删除写入不可变审计日志。
 - 未获得合法字幕时，视频只能收藏链接、元数据和本人笔记。

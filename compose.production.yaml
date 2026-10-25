@@ -56,10 +56,13 @@ services:
     env_file: .env
     environment:
       CONTENT_ARTICLE_DIR: /app/content-data/articles
+      CONTENT_EXPORT_DIR: /app/content-data/exports
+      STORAGE_LOCAL_DIR: /app/private-files
     ports:
       - "127.0.0.1:3999:3000"
     volumes:
       - media_data:/app/media
+      - private_media_data:/app/private-files
       - content_data:/app/content-data
     depends_on:
       seed:
@@ -74,4 +77,5 @@ networks:
 volumes:
   postgres_data:
   media_data:
+  private_media_data:
   content_data:

@@ -233,6 +233,18 @@ button, input, textarea, select { font: inherit; }
 .resource-add-button { min-width: 84px; min-height: 38px; display: inline-flex; justify-content: center; gap: 6px; align-items: center; border: 0; border-radius: 3px; color: #fff; background: var(--green); cursor: pointer; font-weight: 750; }
 .resource-add-button:disabled { opacity: .55; cursor: wait; }
 .resource-form-message { margin: 0; padding-top: 8px; border-top: 1px solid var(--line); color: var(--green); font-size: 12px; }
+.resource-upload { border: 1px solid #c9d1d9; border-radius: 6px; background: #fff; box-shadow: 0 10px 30px rgb(30 42 54 / 7%); }
+.resource-upload summary { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 16px 20px; cursor: pointer; list-style: none; }
+.resource-upload summary::-webkit-details-marker { display: none; }
+.resource-upload summary span { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 750; }
+.resource-upload summary small { color: var(--muted); font-size: 10px; }
+.resource-upload form { display: grid; gap: 10px; padding: 0 20px 20px; border-top: 1px solid var(--line); }
+.resource-upload form > :first-child { margin-top: 16px; }
+.resource-upload input, .resource-upload select, .resource-upload textarea { width: 100%; min-width: 0; border: 1px solid #bfc8d2; border-radius: 3px; padding: 8px 10px; color: var(--ink); background: #fff; }
+.resource-upload input[type="file"] { padding: 7px; font-size: 11px; }
+.resource-upload textarea { resize: vertical; }
+.resource-upload label { display: grid; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 750; }
+.resource-upload .resource-add-button { width: 100%; }
 .resource-filters strong { font-size: 14px; }
 .resource-filters label { display: grid; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 750; }
 .resource-filters > div { display: flex; gap: 12px; align-items: center; }

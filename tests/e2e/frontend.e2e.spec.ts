@@ -1,5 +1,19 @@
 import { expect, test } from '@playwright/test'
 
+test('T019 rejects anonymous private source material downloads without shared caching', async ({ request }) => {
+  const response = await request.get('http://localhost:3000/api/internal/source-materials/1/download')
+  expect(response.status()).toBe(401)
+  expect(response.headers()['cache-control']).toContain('private')
+  expect(response.headers()['cache-control']).toContain('no-store')
+  expect(response.headers()['vary']).toContain('Cookie')
+})
+
+test('rejects anonymous source material listing, upload, and Markdown export', async ({ request }) => {
+  expect((await request.get('http://localhost:3000/api/source-materials')).status()).toBe(403)
+  expect((await request.post('http://localhost:3000/api/internal/source-materials/upload', { multipart: {} })).status()).toBe(401)
+  expect((await request.post('http://localhost:3000/api/internal/exports/markdown', { data: { id: 1, type: 'source-material' } })).status()).toBe(401)
+})
+
 test.describe('Public digital garden', () => {
   test('renders the homepage and primary content', async ({ page }) => {
     await page.goto('http://localhost:3000')

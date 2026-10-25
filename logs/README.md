@@ -6,7 +6,7 @@
 
 | 类型 | 权威位置 | 用途 | 是否进入 Git |
 |---|---|---|---|
-| 操作审计日志 | Payload `audit-logs` / PostgreSQL | 登录、AI 调用、草稿保存、内容创建、发布、撤回、删除 | 否 |
+| 操作审计日志 | Payload `audit-logs` / PostgreSQL | 登录、AI 调用、草稿保存、内容创建、私有材料上传/下载/导出、发布、撤回、删除 | 否 |
 | AI 生成记录 | Payload `ai-generations` / PostgreSQL | Provider、模型、Prompt 版本、调用结果、关联草稿 | 否 |
 | 开发日志 | `logs/development/YYYY-MM-DD.md` | 需求、实现、迁移、测试、commit 和部署痕迹 | 是 |
 | 运行日志 | Docker `local` logging driver | Web、migration、seed、PostgreSQL 的启动与异常 | 否 |
@@ -15,7 +15,7 @@
 ## 安全规则
 
 - 不记录密码、Cookie、Authorization、Token、API Key 或对象存储密钥。
-- 不在审计元数据中保存文章正文、AI 原始素材、Prompt 全文或模型完整输出。
+- 不在审计元数据中保存文章正文、AI 原始素材、来源材料正文、文件字节、原文件名、签名 URL、Prompt 全文或模型完整输出。
 - IP 地址只保存加盐 SHA-256 摘要，盐来自 `AUDIT_IP_HASH_SALT`。
 - `audit-logs` 对匿名用户不可读，对管理员只读；应用层禁止更新和删除。
 - 运行日志采用 10MB x 5 文件轮转，避免占满服务器磁盘。

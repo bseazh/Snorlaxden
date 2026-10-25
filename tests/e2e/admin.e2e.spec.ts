@@ -58,6 +58,54 @@ test.describe('Admin Panel', () => {
     await page.setViewportSize({ width: 1280, height: 720 })
   })
 
+  test('uploads, deduplicates, downloads, and removes a private PDF', async () => {
+    const marker = `private-pdf-${Date.now()}`
+    async function upload() {
+      return page.evaluate(async (value) => {
+        const form = new FormData()
+        form.set('authorizationBasis', 'owned')
+        form.set('authorizationNote', 'Test fixture owned by the test suite.')
+        form.set('file', new File([`%PDF-1.7\n${value}`], `${value}.pdf`, { type: 'application/pdf' }))
+        form.set('personalNotes', 'Private test note.')
+        form.set('sourceDescription', 'Private test source description.')
+        form.set('title', value)
+        const response = await fetch('/api/internal/source-materials/upload', { body: form, method: 'POST' })
+        return { body: await response.json(), status: response.status }
+      }, marker)
+    }
+    const firstUpload = await upload()
+    expect(firstUpload.status).toBe(201)
+    const created = firstUpload.body as { id: number; sourceId: string }
+    expect(created.sourceId).toMatch(/^source-/)
+
+    const duplicate = await upload()
+    expect(duplicate.status).toBe(409)
+    expect(duplicate.body.code).toBe('DUPLICATE_FILE')
+
+    const metadata = await page.evaluate(async (id) => {
+      const response = await fetch(`/api/source-materials/${id}`)
+      return { body: await response.json(), status: response.status }
+    }, created.id)
+    expect(metadata.status).toBe(200)
+    const record = metadata.body
+    expect(record.mimeType).toBe('application/pdf')
+    expect(record.byteSize).toBe(Buffer.byteLength(`%PDF-1.7\n${marker}`))
+    expect(record.sha256).toMatch(/^[a-f0-9]{64}$/)
+    expect(record.privacy).toBe('private')
+
+    const download = await page.evaluate(async (id) => {
+      const response = await fetch(`/api/internal/source-materials/${id}/download`)
+      return { body: await response.text(), cacheControl: response.headers.get('cache-control'), disposition: response.headers.get('content-disposition'), status: response.status }
+    }, created.id)
+    expect(download.status).toBe(200)
+    expect(download.cacheControl).toContain('no-store')
+    expect(download.disposition).toContain('attachment')
+    expect(download.body).toContain(marker)
+
+    const removedStatus = await page.evaluate(async (id) => (await fetch(`/api/source-materials/${id}`, { method: 'DELETE' })).status, created.id)
+    expect(removedStatus).toBe(200)
+  })
+
   test('can generate and review a structured AI draft', async () => {
     await page.route('**/api/internal/ai/draft', async (route) => {
       await route.fulfill({

@@ -13,6 +13,7 @@ import { FAQItems } from './collections/FAQItems'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
 import { Resources } from './collections/Resources'
+import { SourceMaterials } from './collections/SourceMaterials'
 import { Tags } from './collections/Tags'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -27,7 +28,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Tags, Posts, Projects, Resources, FAQItems, AIGenerations, AuditLogs],
+  collections: [Users, Media, Tags, Posts, Projects, Resources, SourceMaterials, FAQItems, AIGenerations, AuditLogs],
   globals: [SiteSettings],
   bodyParser: {
     limits: {

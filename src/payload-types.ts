@@ -73,6 +73,7 @@ export interface Config {
     posts: Post;
     projects: Project;
     resources: Resource;
+    'source-materials': SourceMaterial;
     'faq-items': FaqItem;
     'ai-generations': AiGeneration;
     'audit-logs': AuditLog;
@@ -90,6 +91,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     resources: ResourcesSelect<false> | ResourcesSelect<true>;
+    'source-materials': SourceMaterialsSelect<false> | SourceMaterialsSelect<true>;
     'faq-items': FaqItemsSelect<false> | FaqItemsSelect<true>;
     'ai-generations': AiGenerationsSelect<false> | AiGenerationsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -381,6 +383,41 @@ export interface Resource {
   createdAt: string;
 }
 /**
+ * 仅管理员可见。原始材料不会随关联文章或项目公开。
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "source-materials".
+ */
+export interface SourceMaterial {
+  id: number;
+  title: string;
+  materialType: 'typed_note' | 'pdf' | 'owned_image' | 'authorized_original';
+  sourceId: string;
+  personalNotes?: string | null;
+  sourceDescription?: string | null;
+  authorizedText?: string | null;
+  authorizationBasis: 'owned' | 'permission' | 'open_license' | 'public_domain';
+  authorizationNote: string;
+  sourceUrl?: string | null;
+  sourceTitle?: string | null;
+  sourceAuthor?: string | null;
+  sourceDate?: string | null;
+  capturedAt: string;
+  resources?: (number | Resource)[] | null;
+  posts?: (number | Post)[] | null;
+  projects?: (number | Project)[] | null;
+  author: number | User;
+  privacy: 'private';
+  originalFileName?: string | null;
+  mimeType?: string | null;
+  byteSize?: number | null;
+  sha256?: string | null;
+  storageDriver?: ('local' | 'cos') | null;
+  storageKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faq-items".
  */
@@ -558,6 +595,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'resources';
         value: number | Resource;
+      } | null)
+    | ({
+        relationTo: 'source-materials';
+        value: number | SourceMaterial;
       } | null)
     | ({
         relationTo: 'faq-items';
@@ -779,6 +820,38 @@ export interface ResourcesSelect<T extends boolean = true> {
   relatedPosts?: T;
   relatedProjects?: T;
   capturedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "source-materials_select".
+ */
+export interface SourceMaterialsSelect<T extends boolean = true> {
+  title?: T;
+  materialType?: T;
+  sourceId?: T;
+  personalNotes?: T;
+  sourceDescription?: T;
+  authorizedText?: T;
+  authorizationBasis?: T;
+  authorizationNote?: T;
+  sourceUrl?: T;
+  sourceTitle?: T;
+  sourceAuthor?: T;
+  sourceDate?: T;
+  capturedAt?: T;
+  resources?: T;
+  posts?: T;
+  projects?: T;
+  author?: T;
+  privacy?: T;
+  originalFileName?: T;
+  mimeType?: T;
+  byteSize?: T;
+  sha256?: T;
+  storageDriver?: T;
+  storageKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }

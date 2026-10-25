@@ -1,7 +1,7 @@
 # Snorlaxden DX 与存储标准
 
-> 状态：生效  
-> 最后更新：2026-10-24  
+> 状态：生效
+> 最后更新：2026-10-25
 > 适用范围：代码、内容、媒体、对象存储、环境变量、数据库变更、测试和发布
 
 DX（Developer Experience）标准的目标是让每个功能都有稳定的归属、数据只有一个权威来源、开发和生产可以用同一套规则验证。
@@ -36,6 +36,11 @@ src/
 │       ├── domain.ts         类型、可见性和稳定错误码
 │       ├── normalize-resource-url.ts 安全 URL 规范化
 │       └── resource-service.ts 管理员收藏用例
+│   └── source-materials/
+│       ├── domain.ts         文件类型、大小和错误边界
+│       ├── storage.ts        Local/COS 私有存储 Adapter
+│       ├── source-material-service.ts 上传、去重和元数据落库
+│       └── markdown-export.ts 私有 Markdown 导出
 ├── collections/           Payload Collection Schema
 ├── globals/               Payload Global Schema
 ├── access/                Payload 访问控制
@@ -77,6 +82,8 @@ providers / infrastructure
 | 文章 | Payload `posts` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | 项目 | Payload `projects` | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | 资源、短记和来源关系 | Payload `resources` | PostgreSQL，仅管理员可见 | 仅 Schema、测试和迁移进入 |
+| 来源材料元数据与关系 | Payload `source-materials` | PostgreSQL，仅管理员可见 | 仅 Schema、测试和迁移进入 |
+| 私有 PDF/图片原件 | Private Storage Adapter | 本地 `.private-files/`；生产 `/app/private-files/` | 否 |
 | FAQ/标签/站点设置 | Payload Collections/Global | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 | 否 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读 | 否 |
@@ -113,6 +120,9 @@ providers / infrastructure
 - 不允许内嵌 base64 图片、脚本、iframe 或本机绝对路径。
 - 附件使用逻辑引用，导入时由 Media/Storage 服务生成稳定 ID。
 - `content/inbox/` 只放本人有权处理的素材，导入完成后应清理。
+- 来源材料导出固定进入 `content/exports/source-materials/`，资源导出进入 `content/exports/resources/`；两者默认 `visibility: private`，都不是公开花园输入。
+- 私有导出正文固定分为“个人笔记、来源说明、授权说明、已授权文字”四区；空区保留明确标记，禁止把个人推断伪装成来源原文。
+- 已存在的同名导出文件不得静默覆盖；内容变化时生成 `.conflict-<timestamp>.md` 供人工合并。
 
 ### 资源库规则
 
@@ -122,7 +132,7 @@ providers / infrastructure
 - URL 只允许 `http:` 和 `https:`，禁止凭据、localhost、环回、内网、链路本地及云元数据目标。Bilibili、YouTube 使用平台 ID 生成 canonical URL 和唯一 `sourceKey`，其余网页按清理跟踪参数后的 URL 去重。
 - 仅保存 URL 时必须保持 `ingestStatus=saved_only` 与 `sourceAccess=url_only`，不得声称已经解析、观看或理解内容。
 - `/library` 与 `/api/internal/resources` 都必须验证管理员会话；资源创建、修改和删除写入审计日志，但日志不得包含私人笔记或来源正文。
-- PDF/图片文件、签名下载、对象存储和 Markdown 导出归 ISSUE-006，不能在资源 URL 收藏逻辑中暗中抓取或缓存。
+- PDF/图片由 `source-materials` 管理，不能在资源 URL 收藏逻辑中暗中抓取或缓存；一条材料可显式关联资源、文章和项目。
 
 ## 4. 媒体与对象存储标准
 
@@ -130,66 +140,61 @@ providers / infrastructure
 
 ### 当前实现
 
-- 本地上传目录：项目根目录 `media/`，已在 `.gitignore` 中忽略。
-- 生产容器目录：`/app/media`。
-- 生产持久卷：Compose `media_data`，数据库容器无法直接访问。
+- 公开站图片仍使用 Payload `media`：本地 `media/`，生产 `/app/media` 和 `media_data`。
+- 私有来源原件使用独立 `PrivateStorageAdapter`：本地 `.private-files/`，生产 `/app/private-files` 和 `private_media_data`。
+- 私有对象只通过 `/api/internal/source-materials/:id/download` 下载；先验证管理员，再按数据库 object key 读取。成功、拒绝与失败响应都使用 `private, no-store`。
+- 上传只接受文件头与声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件最多 10MB；SHA-256 唯一索引和上传前查询共同阻止重复文件。
 - 静态个人形象等公开构建资产：`public/images/`。
-- 当前尚未启用 COS/OSS，不能把环境变量模板误认为已经完成接入。
+- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，但 Region、SecretId、SecretKey 尚未提供；生产继续使用 local，不能把 Bucket 名或环境变量模板误认为 COS 已接通。
 
 ### 目标 Adapter
 
 ```ts
-interface StorageAdapter {
+interface PrivateStorageAdapter {
   put(input: PutObjectInput): Promise<StoredObject>
-  getPrivateUrl(key: string, expiresInSeconds: number): Promise<string>
-  getPublicUrl(key: string): string
+  read(key: string): Promise<Uint8Array>
   delete(key: string): Promise<void>
 }
 ```
 
-实现顺序：`LocalStorageAdapter` → `S3CompatibleStorageAdapter`（腾讯云 COS 或其他兼容服务）。业务模块只保存对象 `key`，不保存临时签名 URL。
+当前已实现 `LocalPrivateStorageAdapter`，并保留 `COSPrivateStorageAdapter` 边界。COS 实现必须使用腾讯云官方 SDK，不自写签名协议；配置齐全并完成回归测试后才能把 `STORAGE_DRIVER` 切为 `cos`。业务模块只保存对象 `key` 和实际 driver，不保存临时签名 URL。
 
 ### 对象 Key
 
 ```text
-{visibility}/{kind}/{yyyy}/{mm}/{uuid}-{safe-name}.{ext}
+private/source-materials/{yyyy}/{mm}/{uuid}.{ext}
 ```
 
 示例：
 
 ```text
-private/originals/2026/10/019f...-training-photo.jpg
-public/covers/2026/10/019f...-medical-ai-workflow.webp
+private/source-materials/2026/10/019f....pdf
 ```
 
-- `visibility`：`private` 或 `public`。
-- `kind`：`originals`、`covers`、`attachments`、`derived`。
-- 必须使用 UUID；不能只使用用户原始文件名。
-- `safe-name` 只含小写 ASCII、数字和短横线。
-- 派生图与原图使用不同 key，并在数据库保存父子关系。
+- 来源材料 object key 永远以 `private/source-materials/` 开头，并使用服务端 UUID；原文件名只作为受控下载名元数据。
+- Adapter 必须拒绝 `..`、绝对路径、格式外 key 和符号链接，不能依赖用户提交的路径。
 
 ### 权限和元数据
 
 - Bucket 默认私有，公共文件也必须经过明确发布动作后才能提供 CDN/public URL。
-- 私有文件只返回短时签名 URL；不能把 Bucket 管理凭证暴露给浏览器。
-- Payload `media` 至少保存：`alt`、`purpose`、`visibility`、`licenseNote`、MIME、大小、对象 key、校验和。
-- 上传前检查 MIME、扩展名、大小；图片重新解码后再生成派生尺寸。
+- 当前私有文件由应用鉴权后流式/字节响应；未来 COS 可由应用代理或生成单次短时签名 URL，但签名 URL不能落库、进日志或进入 Markdown。
+- Payload `source-materials` 保存 MIME、字节数、SHA-256、object key、实际 driver、授权依据、授权说明和来源信息。
+- 上传前检查 MIME、magic bytes 和大小；不能仅信任扩展名或浏览器 Content-Type。
 - 删除数据库记录前先检查引用；删除对象失败时记录任务并重试，不能静默留下失联对象。
 - 日志不得记录 API Key、签名 URL、私有对象正文或完整个人敏感信息。
 
 ### 环境变量命名（接入时启用）
 
 ```text
-STORAGE_DRIVER=local|s3
-STORAGE_ENDPOINT=
-STORAGE_REGION=
-STORAGE_BUCKET=
-STORAGE_ACCESS_KEY_ID=
-STORAGE_SECRET_ACCESS_KEY=
-STORAGE_PUBLIC_BASE_URL=
+STORAGE_DRIVER=local|cos
+STORAGE_LOCAL_DIR=.private-files
+COS_BUCKET=digital-1486267453
+COS_REGION=
+COS_SECRET_ID=
+COS_SECRET_KEY=
 ```
 
-这些变量只有完成 Adapter、迁移和回归测试后才加入 `.env.example`。真实值仅进入本机/服务器 `.env`，权限 `600`。
+Bucket 名可进入模板；Region 与真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置时保持 `STORAGE_DRIVER=local`。
 
 ### 备份与迁移
 
@@ -201,6 +206,8 @@ STORAGE_PUBLIC_BASE_URL=
 ## 5. API 与安全标准
 
 - `/api/internal/**` 必须在 Route Handler 内再次验证管理员会话。
+- 私有附件下载必须先认证、后查 ID；匿名请求统一 401，不通过记录是否存在泄露枚举信息。
+- 私有下载必须设置 `Cache-Control: private, no-store`、`Pragma: no-cache`、`Vary: Cookie, Authorization` 与 `X-Content-Type-Options: nosniff`。
 - 公开读取由 Payload access 层过滤，不能仅依赖页面隐藏。
 - 输入必须限制类型、枚举、长度和数量；模型 JSON 必须白名单映射。
 - 外部请求必须有超时，供应商错误映射为稳定内部错误码。

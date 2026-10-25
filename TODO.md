@@ -1,8 +1,8 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-25
-> 当前里程碑：Sprint 2｜ISSUE-005 资源库已完成
-> 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
+> 当前里程碑：Sprint 2｜ISSUE-006 私有媒体与安全导出（进行中）
+> 状态说明：`[x]` 已完成，`[~]` 进行中，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
 
@@ -135,7 +135,7 @@
 - [x] 建立资源、文章、项目之间的显式关联，暂不做自动推荐
 - [x] 规范 Bilibili/YouTube URL，移除跟踪参数并拒绝危险协议、凭据和内网地址
 - [x] 验证 T011、T012：无文字时只标记收藏，不伪造分析；私人资源仅管理员可见
-- [ ] [ISSUE-006：私有媒体、来源关联与 Markdown 导出](https://github.com/bseazh/Snorlaxden/issues/5)
+- [~] [ISSUE-006：私有媒体、来源关联与 Markdown 导出](https://github.com/bseazh/Snorlaxden/issues/5)
 - [ ] 验证 T019
 
 ### Sprint 3｜公开 Obsidian Quartz（P0）
