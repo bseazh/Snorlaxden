@@ -56,7 +56,7 @@
 | 本机位置 | 项目 `.env`，权限 `600` |
 | 服务器位置 | `/home/ubuntu/Project/snorlaxden/app/.env`，权限 `600` |
 | Git/日志策略 | 只提交 `.env.example` 中的变量名；真实 Key 不进入 Git、Issue、日志、构建产物或客户端 |
-| 接口验证 | 2026-10-26 文生图和参考图输入均返回成功；参考图请求回报 `input_images=1` |
+| 接口验证 | 2026-10-26 文生图、参考图输入和生产全链 smoke 均成功；参考图请求回报 `input_images=1`，候选图转存私有 COS并完成零残留清理 |
 | 下载边界 | 只允许固定 HTTPS 主机；禁重定向，校验大小、MIME、图片解码和 SHA-256 后转存私有 COS |
 
 Key 轮换后必须同步更新本机和服务器 `.env`，再执行受控 production smoke；禁止把 Key 作为“网络备份”提交到 GitHub。服务端 `.env` 和生产数据库/私有 COS 是运行态保存位置，GitHub 仅保存非敏感契约与历史代码。
