@@ -13,6 +13,7 @@ export function SiteHeader() {
         </Link>
         <nav className="primary-nav" aria-label="主导航">
           {navItems.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
+          <Link className="admin-entry" href="/manage">管理入口</Link>
         </nav>
       </div>
     </header>

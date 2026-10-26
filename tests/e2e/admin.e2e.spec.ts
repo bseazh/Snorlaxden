@@ -25,6 +25,22 @@ test.describe('Admin Panel', () => {
     await expect(dashboardArtifact).toBeVisible()
   })
 
+  test('opens every private tool from the creation hub', async () => {
+    await page.goto('http://localhost:3000/manage')
+    await expect(page.getByRole('heading', { name: '创作与管理中心' })).toBeVisible()
+    const tools = page.getByRole('navigation', { name: '管理员工具' })
+    await expect(tools.getByRole('link', { name: /AI 写文章/ })).toHaveAttribute('href', '/studio')
+    await expect(tools.getByRole('link', { name: /上传与管理材料/ })).toHaveAttribute('href', '/library')
+    await expect(tools.getByRole('link', { name: /AI 生成封面/ })).toHaveAttribute('href', '/studio/images')
+    await expect(tools.getByRole('link', { name: /文章草稿与发布/ })).toHaveAttribute('href', '/admin/collections/posts')
+    await expect(tools.getByRole('link', { name: /完整内容后台/ })).toHaveAttribute('href', '/admin')
+    await page.setViewportSize({ width: 390, height: 844 })
+    const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }))
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
+    await expect(page.getByRole('heading', { name: '创作与管理中心' })).toBeVisible()
+    await page.setViewportSize({ width: 1280, height: 720 })
+  })
+
   test('can navigate to list view', async () => {
     await page.goto('http://localhost:3000/admin/collections/users')
     await expect(page).toHaveURL(/\/admin\/collections\/users(?:\?.*)?$/)

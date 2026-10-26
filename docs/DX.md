@@ -113,6 +113,7 @@ providers / infrastructure
 
 ### 文章规则
 
+- 公开站 Header 与 Footer 必须保留“管理入口”，统一指向受保护的 `/manage`；匿名访问跳转 Payload 登录，登录后可从创作中心到达 `/studio`、`/library`、`/studio/images`、文章列表和完整后台。
 - 后台创建、AI 生成或 Markdown 导入都先进入 `draft`。
 - AI 调用按管理员和 UTC 自然日计数，默认上限为 20，可用 `AI_DAILY_LIMIT` 调整；成功与失败调用都计入记录和额度。
 - AI 生成成功后不会自动写入文章。管理员必须显式点击“保存草稿”，系统才同时创建 Payload draft 和 Markdown 工作副本。

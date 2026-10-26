@@ -4,7 +4,7 @@ Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与
 
 **Sprint 0–3、COS 私有存储、生产恢复基线与 ISSUE-010/014 AI 内容生产链路已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料、可搜索且可撤回的公开知识花园，以及文字草稿和文章封面工作台。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
-生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
+生产站运行在 https://blog.snorlaxden.fun。公开站顶部和页脚提供“管理入口”，未登录时先进入 Payload 登录，登录后进入统一的 `/manage` 创作与管理中心；也可以直接访问 https://blog.snorlaxden.fun/admin。
 
 ## 技术栈
 
@@ -166,7 +166,7 @@ pnpm dev:db:down
 | `PUBLIC_GARDEN_MANIFEST` | 实际白名单 manifest 的路径 | 只在执行导出的环境配置，不进入 Git |
 | `PUBLIC_GARDEN_OUTPUT_DIR` | `/garden` 唯一可读的公开副本目录 | 默认 `content/public-garden`；生产 `/app/public-garden` |
 
-AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择具有个人笔记、本人所有或明确授权文字的 Resource/SourceMaterial，也可补充本次个人笔记。服务端会再次验证来源，且不会把 PDF/图片原始字节发送给模型。
+AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员可从公开页“管理入口”登录并进入 `/manage`，再前往 `/studio`、`/library`、`/studio/images` 或 Payload 文章后台。写作工作台可选择具有个人笔记、本人所有或明确授权文字的 Resource/SourceMaterial，也可补充本次个人笔记。服务端会再次验证来源，且不会把 PDF/图片原始字节发送给模型。
 
 工作流先生成“已有事实、缺失信息、待人工确认内容、允许引用来源”事实包，再据此生成结构化文章草稿。`ai-generations` 保存任务状态、当前步骤、事实包、来源关系、重试次数和实际模型调用次数；第二步失败时可以沿用已成功的事实包重试，不重复消耗第一步。每日限额按真实模型调用次数计算。成功结果只能由管理员点击“保存草稿”后写入 Payload draft 和 `content/articles/<slug>.md` 审阅副本；系统没有自动发布路径。
 

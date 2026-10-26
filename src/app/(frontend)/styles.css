@@ -30,6 +30,8 @@ button, input, textarea, select { font: inherit; }
 .primary-nav { display: flex; align-items: center; gap: 28px; }
 .primary-nav a { color: rgb(255 255 255 / 82%); font-size: 14px; text-decoration: none; }
 .primary-nav a:hover { color: #fff; }
+.primary-nav .admin-entry { padding: 6px 11px; border: 1px solid rgb(255 255 255 / 42%); border-radius: 3px; color: #fff; font-weight: 750; }
+.primary-nav .admin-entry:hover { border-color: #fff; background: rgb(255 255 255 / 10%); }
 
 .hero-band { position: relative; min-height: min(720px, calc(100svh - 68px)); display: grid; align-content: stretch; overflow: hidden; color: #fff; background: #263544; }
 .hero-image { z-index: 0; object-fit: cover; object-position: center 31%; }
@@ -200,6 +202,18 @@ button, input, textarea, select { font: inherit; }
 .studio-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
 .studio-heading h1 { margin: 0; font: 500 48px/1.1 Georgia, "Songti SC", serif; }
 .studio-links { display: flex; flex-wrap: wrap; gap: 16px; }
+.manage-shell { padding-block: 72px 100px; }
+.manage-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 520px); gap: 48px; align-items: end; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+.manage-heading h1 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: clamp(42px, 6vw, 68px); font-weight: 500; line-height: 1.1; }
+.manage-heading > p { margin: 0; color: var(--muted); font-size: 18px; }
+.manage-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 34px; }
+.manage-card { min-height: 230px; display: flex; flex-direction: column; padding: 28px; border: 1px solid var(--line); border-radius: 4px; background: #fff; text-decoration: none; transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.manage-card:hover { border-color: #9aa6b4; box-shadow: 0 14px 34px rgb(47 65 84 / 9%); transform: translateY(-2px); }
+.manage-card strong { color: var(--ink); font-family: Georgia, "Songti SC", serif; font-size: 29px; font-weight: 500; }
+.manage-card p { max-width: 520px; margin: 14px 0 24px; color: var(--muted); }
+.manage-card-action { margin-top: auto; color: var(--blue); font-size: 14px; font-weight: 750; }
+.manage-notice { display: flex; gap: 18px; margin-top: 22px; padding: 18px 22px; border-left: 3px solid var(--yellow); background: #fff; }
+.manage-notice span { color: var(--muted); }
 .studio-grid { display: grid; grid-template-columns: minmax(360px, .8fr) minmax(0, 1.2fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
 .image-studio-grid { display: grid; grid-template-columns: minmax(300px, .8fr) minmax(0, 1.2fr); gap: 28px; align-items: start; }
 .studio-form, .studio-output { min-width: 0; padding: 30px; background: var(--white); }
@@ -388,6 +402,7 @@ button, input, textarea, select { font: inherit; }
   .header-inner { min-height: 62px; align-items: flex-start; flex-direction: column; gap: 9px; padding-block: 10px; }
   .primary-nav { width: 100%; gap: 0; justify-content: space-between; overflow-x: auto; }
   .primary-nav a { padding: 3px 5px; }
+  .primary-nav .admin-entry { padding: 3px 7px; }
   .hero-band { min-height: min(650px, calc(100svh - 99px)); }
   .hero-image { object-position: center 27%; }
   .hero-inner { min-height: 460px; padding-block: 38px 30px; }
@@ -413,6 +428,11 @@ button, input, textarea, select { font: inherit; }
   .article-shell { margin-block: 28px 56px; padding: 34px 22px 56px; }
   .footer-grid { grid-template-columns: 1fr; gap: 24px; }
   .studio-heading { align-items: flex-start; flex-direction: column; }
+  .manage-shell { padding-block: 48px 72px; }
+  .manage-heading { grid-template-columns: 1fr; gap: 18px; }
+  .manage-grid { grid-template-columns: 1fr; }
+  .manage-card { min-height: 210px; padding: 22px; }
+  .manage-notice { align-items: flex-start; flex-direction: column; gap: 6px; }
   .image-studio-grid { grid-template-columns: 1fr; }
   .candidate-grid { grid-template-columns: 1fr; }
   .studio-form, .studio-output { padding: 20px; }

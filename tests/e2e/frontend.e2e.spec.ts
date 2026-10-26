@@ -33,6 +33,7 @@ test.describe('Public digital garden', () => {
     await expect(page.getByText('文章与实践笔记')).toBeVisible()
     await expect(page.getByText('你目前主要研究什么？')).toBeVisible()
     await expect(page.getByRole('link', { name: '粤ICP备2026035659号' })).toHaveAttribute('href', 'https://beian.miit.gov.cn/')
+    await expect(page.getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '管理入口' })).toHaveAttribute('href', '/manage')
   })
 
   test('renders project and article detail pages', async ({ page }) => {
@@ -120,5 +121,10 @@ test.describe('Public digital garden', () => {
   test('redirects anonymous visitors away from the private resource library', async ({ page }) => {
     await page.goto('http://localhost:3000/library')
     await expect(page).toHaveURL(/\/admin\/login\?redirect=%2Flibrary/)
+  })
+
+  test('sends anonymous visitors from the management entry to login', async ({ page }) => {
+    await page.goto('http://localhost:3000/manage')
+    await expect(page).toHaveURL(/\/admin\/login\?redirect=%2Fmanage/)
   })
 })
