@@ -23,7 +23,7 @@ chmod 700 "$BACKUP_ROOT" "$BACKUP_ROOT/drills"
 exec 9>"$BACKUP_ROOT/.backup.lock"
 flock -n 9 || fail BACKUP_ALREADY_RUNNING
 
-COMMIT="$(git -C "$PROJECT_DIR" rev-parse --short=12 HEAD)"
+COMMIT="$(git -c safe.directory="$PROJECT_DIR" -C "$PROJECT_DIR" rev-parse --short=12 HEAD)"
 BATCH_ID="$(date -u +%Y%m%dT%H%M%SZ)-$COMMIT"
 STAGING="$(mktemp -d "$BACKUP_ROOT/.staging-${BATCH_ID}.XXXXXX")"
 FINAL="$BACKUP_ROOT/$BATCH_ID"
