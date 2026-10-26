@@ -138,9 +138,9 @@ pnpm dev:db:down
 | `PUBLIC_AI_DAILY_LIMIT` | 每个访客 IP 摘要的每日自由问答上限 | 已使用，默认 10 |
 | `AUDIT_IP_HASH_SALT` | 审计日志 IP 摘要盐 | 已使用，生产必须设置随机值 |
 | `CONTENT_EXPORT_DIR` | 私有 Markdown 导出根目录 | 已使用；生产为 `/app/content-data/exports` |
-| `STORAGE_DRIVER` | `local` 或 `cos` 私有存储选择 | 当前必须为 `local` |
-| `STORAGE_LOCAL_DIR` | 本地私有原件目录 | 已使用；生产为 `/app/private-files` |
-| `COS_BUCKET` | 腾讯云 COS Bucket | 已预留 `digital-1486267453` |
+| `STORAGE_DRIVER` | `local` 或 `cos` 私有存储选择 | 本地可用 `local`；生产为 `cos` |
+| `STORAGE_LOCAL_DIR` | 本地私有原件目录 | local 模式使用；生产保留 `/app/private-files` 作为回滚卷 |
+| `COS_BUCKET` | 腾讯云 COS Bucket | 已使用 `digital-1486267453` |
 | `COS_REGION` | COS 地域 | 已确认 `ap-guangzhou` |
 | `COS_SECRET_ID`、`COS_SECRET_KEY` | COS 服务端凭证 | 已配置于本机和服务器私密环境，禁止提交 Git |
 | `PUBLIC_GARDEN_SOURCE_DIR` | 私人 Vault 或受控 Markdown 来源根目录 | 只在执行导出的环境配置，不进入 Git |
@@ -198,7 +198,7 @@ docker compose -f compose.production.yaml up -d --build
 | 正式文章 | Payload `posts` | PostgreSQL |
 | 私人资源、短记与来源关系 | Payload `resources` | PostgreSQL，仅管理员可见；入口 `/library` |
 | 私有来源材料、授权与文件元数据 | Payload `source-materials` | PostgreSQL，仅管理员可见；入口 `/library` |
-| 私有 PDF/图片原件 | Private Storage Adapter | 本地 `.private-files/`；生产 `/app/private-files` volume |
+| 私有 PDF/图片原件 | Private Storage Adapter | 本地默认 `.private-files/`；生产腾讯云私有 COS；local 卷保留用于回滚 |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
@@ -212,7 +212,7 @@ docker compose -f compose.production.yaml up -d --build
 
 文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。来源材料导出固定标记 `visibility: private`，并区分个人笔记、来源说明、授权说明和已授权文字。生产目录由 `content_data` Docker volume 持久化。
 
-腾讯云 COS Bucket `digital-1486267453` 和 Region `ap-guangzhou` 已登记。API 凭证已分别保存到本机和服务器的私密目录及 `.env`，并从两个环境完成 Put、Head、Get、Delete 和删除后不可读测试。代码中的 COS Adapter 尚未实现，因此生产继续使用独立私有卷和 `STORAGE_DRIVER=local`；详情见 [凭证登记](docs/operations/CREDENTIALS.md)。
+腾讯云 COS Bucket `digital-1486267453` 和 Region `ap-guangzhou` 已接入官方 SDK Adapter。API 凭证只保存于本机和服务器的私密目录及 `.env`；应用级回归覆盖 Put、Head、Get、SHA-256、Delete 和删除后不可读。生产使用 `STORAGE_DRIVER=cos`，下载仍由应用先执行管理员鉴权，不暴露 Bucket URL 或持久签名 URL。生产盘点无历史 local 来源材料；代码按记录的实际 driver 双轨读取，local 卷暂时保留供回滚。详情见 [凭证登记](docs/operations/CREDENTIALS.md)。
 
 ## 公开花园白名单导出
 

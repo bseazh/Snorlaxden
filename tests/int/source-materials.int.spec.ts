@@ -2,9 +2,11 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  COSPrivateStorageAdapter,
+  type COSStorageClient,
   LocalPrivateStorageAdapter,
   privateDownloadHeaders,
   renderSourceMaterialMarkdown,
@@ -59,6 +61,111 @@ describe('local private storage', () => {
     await writeFile(target, '%PDF-1.7')
     await symlink(target, path.join(folder, '00000000-0000-0000-0000-000000000000.pdf'))
     await expect(storage.read('private/source-materials/2026/10/00000000-0000-0000-0000-000000000000.pdf')).rejects.toThrowError(/存储对象无效/)
+  })
+})
+
+const cosConfig = {
+  bucket: 'digital-1486267453',
+  region: 'ap-guangzhou',
+  secretId: 'test-secret-id',
+  secretKey: 'test-secret-key',
+}
+
+function fakeCOSClient(overrides: Partial<COSStorageClient> = {}) {
+  return {
+    deleteObject: vi.fn(async () => ({ statusCode: 204 })),
+    getObject: vi.fn(async () => ({ Body: Buffer.from('%PDF-1.7\nfake'), ETag: 'etag', statusCode: 200 })),
+    headObject: vi.fn(async () => ({
+      ETag: 'etag',
+      headers: { 'content-length': '14', 'x-cos-meta-sha256': 'checksum' },
+      statusCode: 200,
+    })),
+    putObject: vi.fn(async () => ({ ETag: 'etag', Location: 'private-object', statusCode: 200 })),
+    ...overrides,
+  } as COSStorageClient
+}
+
+describe('COS private storage', () => {
+  it('uploads private no-store objects and verifies size and SHA-256 metadata', async () => {
+    const bytes = Buffer.from('%PDF-1.7\nfake')
+    const client = fakeCOSClient({
+      headObject: vi.fn(async () => ({
+        ETag: 'etag',
+        headers: { 'content-length': String(bytes.byteLength), 'x-cos-meta-sha256': 'checksum' },
+        statusCode: 200,
+      })),
+    })
+    const storage = new COSPrivateStorageAdapter(cosConfig, client)
+    const stored = await storage.put({ buffer: bytes, extension: 'pdf', mimeType: 'application/pdf', sha256: 'checksum' })
+
+    expect(stored.driver).toBe('cos')
+    expect(stored.key).toMatch(/^private\/source-materials\/\d{4}\/\d{2}\/[0-9a-f-]+\.pdf$/)
+    expect(client.putObject).toHaveBeenCalledWith(expect.objectContaining({
+      ACL: 'private',
+      Body: bytes,
+      CacheControl: 'private, no-store, max-age=0',
+      ContentLength: bytes.byteLength,
+      ContentType: 'application/pdf',
+      'x-cos-meta-sha256': 'checksum',
+    }))
+    expect(client.headObject).toHaveBeenCalledOnce()
+  })
+
+  it('removes an uploaded object when its integrity metadata does not match', async () => {
+    const client = fakeCOSClient()
+    const storage = new COSPrivateStorageAdapter(cosConfig, client)
+    await expect(storage.put({
+      buffer: Buffer.from('%PDF-1.7\nfake'),
+      extension: 'pdf',
+      mimeType: 'application/pdf',
+      sha256: 'different-checksum',
+    })).rejects.toMatchObject({ code: 'COS_INTEGRITY_CHECK_FAILED' })
+    expect(client.deleteObject).toHaveBeenCalledOnce()
+  })
+
+  it('reads the same bytes and rejects invalid keys before calling COS', async () => {
+    const bytes = Buffer.from('%PDF-1.7\nfake')
+    const client = fakeCOSClient({
+      getObject: vi.fn(async () => ({ Body: bytes, ETag: 'etag', statusCode: 200 })),
+    })
+    const storage = new COSPrivateStorageAdapter(cosConfig, client)
+    const key = 'private/source-materials/2026/10/00000000-0000-0000-0000-000000000000.pdf'
+    expect(Buffer.from(await storage.read(key))).toEqual(bytes)
+    await expect(storage.read('../../etc/passwd')).rejects.toMatchObject({ code: 'INVALID_STORAGE_KEY' })
+    expect(client.getObject).toHaveBeenCalledOnce()
+  })
+
+  it('treats a missing object as an idempotent delete', async () => {
+    const client = fakeCOSClient({
+      deleteObject: vi.fn(async () => { throw { code: 'NoSuchKey', statusCode: 404 } }),
+    })
+    const storage = new COSPrivateStorageAdapter(cosConfig, client)
+    await expect(storage.delete('private/source-materials/2026/10/00000000-0000-0000-0000-000000000000.pdf')).resolves.toBeUndefined()
+  })
+
+  it('retries deletion once without exposing the raw COS error', async () => {
+    const deleteObject = vi.fn()
+      .mockRejectedValueOnce(new Error(`temporary ${cosConfig.secretKey}`))
+      .mockResolvedValueOnce({ statusCode: 204 })
+    const storage = new COSPrivateStorageAdapter(cosConfig, fakeCOSClient({ deleteObject }))
+    await expect(storage.delete('private/source-materials/2026/10/00000000-0000-0000-0000-000000000000.pdf')).resolves.toBeUndefined()
+    expect(deleteObject).toHaveBeenCalledTimes(2)
+  })
+
+  it('fails closed on incomplete configuration and never exposes SDK secrets', async () => {
+    expect(() => new COSPrivateStorageAdapter({ ...cosConfig, secretKey: '' })).toThrowError(/配置不完整/)
+    const client = fakeCOSClient({
+      getObject: vi.fn(async () => {
+        throw new Error(`request failed ${cosConfig.secretId} ${cosConfig.secretKey} signature-url`)
+      }),
+    })
+    const storage = new COSPrivateStorageAdapter(cosConfig, client)
+    const key = 'private/source-materials/2026/10/00000000-0000-0000-0000-000000000000.pdf'
+    const error = await storage.read(key).catch((caught: unknown) => caught)
+    expect(error).toMatchObject({ code: 'COS_READ_FAILED' })
+    expect(String((error as Error).message)).not.toContain(cosConfig.secretId)
+    expect(String((error as Error).message)).not.toContain(cosConfig.secretKey)
+    expect(String((error as Error).message)).not.toContain('signature-url')
   })
 })
 

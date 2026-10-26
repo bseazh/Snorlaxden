@@ -59,7 +59,7 @@ export async function uploadSourceMaterial(
     throw error
   }
   const storage = getPrivateStorage()
-  const stored = await storage.put({ buffer, extension, mimeType })
+  const stored = await storage.put({ buffer, extension, mimeType, sha256 })
 
   const data = {
     author: user.id,

@@ -16,16 +16,16 @@
 | 文件权限 | `600` |
 | Git/构建策略 | `.secrets/` 被 Git、Docker context 和 Next standalone 排除 |
 | API 凭证 | 已写入本机与服务器 `.env`，不在本文记录真实值 |
-| COS API 测试 | 2026-10-25 本机和服务器均通过 Put、Head、Get、Delete、删除后 404 |
-| 生产存储驱动 | `local`，不得提前切换为 `cos` |
+| COS API 测试 | 2026-10-25 本机和服务器通过基础 API；2026-10-26 官方 Adapter 通过应用级 Put、Head、Get、SHA-256、Delete、删除后 404 |
+| 生产存储驱动 | `cos`；local 卷保留用于按记录 driver 回滚 |
 
 ## 打通条件
 
 1. 推荐在腾讯云 CVM 上为实例绑定仅限该 Bucket 私有前缀的最小权限 CAM 角色，避免长期 SecretKey。
 2. 当前长期 API 密钥已写入本机和服务器 `.env`；不得回填到公开文档或 Git，并应建立轮换计划。
 3. 权限应只覆盖 `digital-1486267453/private/source-materials/*` 所需的上传、读取、查询和删除对象操作。
-4. 凭证连通性测试已经通过；仍需实现并测试官方 COS SDK Adapter，才能启用生产驱动。
-5. Adapter 完成集成、失败回滚和 T019 回归前保持 `STORAGE_DRIVER=local`。
+4. 官方 COS SDK Adapter、Fake Client、真实应用级读写删和错误脱敏测试已经通过。
+5. 生产切换前 `source-materials` 为 0 条，无历史原件需要迁移；新增记录使用 COS，历史/回滚记录仍按自身 `storageDriver` 读取。
 
 ## 轮换与事件处理
 

@@ -166,12 +166,23 @@
 
 完成标准：公开笔记支持搜索、标签、双链和反向链接；撤回后旧 URL 与附件返回 404 且不缓存；manifest 外或 checksum 不匹配内容拒绝读取。
 
-### 下一工作包｜COS Private Storage Adapter（P0）
+### 已完成｜[ISSUE-013：腾讯云 COS 私有存储 Adapter 与安全迁移](https://github.com/bseazh/Snorlaxden/issues/12)（P0）
 
-- [ ] 使用腾讯云官方 SDK 实现 `COSPrivateStorageAdapter`，不自写签名
-- [ ] 保持私有对象只通过管理员鉴权下载，禁止公开 Bucket URL 和持久化签名 URL
-- [ ] 增加上传失败清理、删除重试、checksum 和 T019 回归
-- [ ] 完成 local → COS 复制、校验、切读路径和可回滚迁移后再设置 `STORAGE_DRIVER=cos`
+- [x] 使用腾讯云官方 `cos-nodejs-sdk-v5` 实现 `COSPrivateStorageAdapter`，不自写签名
+- [x] 保持私有对象只通过管理员鉴权下载，禁止公开 Bucket URL 和持久化签名 URL
+- [x] 增加上传后 HEAD 完整性校验、失败清理、删除重试、受控错误和 Fake Client 测试
+- [x] 本机完成真实 COS Put、Head、Get、SHA-256、Delete 和删除后 404 应用级回归
+- [x] 生产数据盘点为 0 条，无历史 local 对象需要复制；保留按记录 driver 的 local/COS 双轨读取与回滚
+- [x] 切换生产 `STORAGE_DRIVER=cos`，回归 T019、健康检查和匿名边界
+
+完成标准：新上传原件进入私有 COS 前缀并通过完整性校验；任何下载仍先经过管理员鉴权；失败不泄露签名或凭证且尽力清理残留对象；历史记录可继续按原 driver 读取。
+
+### 下一工作包｜[ISSUE-012：生产备份、恢复演练与监控](https://github.com/bseazh/Snorlaxden/issues/11)（P0）
+
+- [ ] 为 PostgreSQL、公开媒体、私有 COS 对象和公开花园建立同批次备份清单
+- [ ] 在隔离环境执行数据库与对象恢复演练，并记录 RPO/RTO 和校验结果
+- [ ] 增加 Web、数据库、COS 错误率、磁盘和证书到期监控及告警
+- [ ] 完成部署健康检查、回滚手册、T018 和 T020
 
 ### AI 后续增强（P1，可关闭）
 
@@ -180,7 +191,7 @@
 
 ### Sprint 5｜生产完善（P0）
 
-- [ ] ISSUE-012：数据库和媒体备份、隔离恢复演练、监控和回滚说明
+- [ ] [ISSUE-012：数据库和媒体备份、隔离恢复演练、监控和回滚说明](https://github.com/bseazh/Snorlaxden/issues/11)
 - [ ] 配置生产迁移流程和部署健康检查
 - [ ] 完成大陆站合规/备案确认
 - [ ] 验证 T018、T020

@@ -165,7 +165,7 @@ providers / infrastructure
 - 私有对象只通过 `/api/internal/source-materials/:id/download` 下载；先验证管理员，再按数据库 object key 读取。成功、拒绝与失败响应都使用 `private, no-store`。
 - 上传只接受文件头与声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件最多 10MB；SHA-256 唯一索引和上传前查询共同阻止重复文件。
 - 静态个人形象等公开构建资产：`public/images/`。
-- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；API 凭证已保存于本机和服务器私密环境，并从两端通过真实读写删测试。生产仍使用 local，因为官方 COS Adapter 尚未实现和完成应用级回归。
+- 腾讯云 COS Bucket 为 `digital-1486267453`、Region 为 `ap-guangzhou`；官方 SDK Adapter 与应用级真实读写删回归均已完成，生产使用 COS。生产切换前 `source-materials` 为 0 条，无历史对象需要复制；local 卷与按记录 driver 的双轨读取继续保留用于回滚。
 
 ### 目标 Adapter
 
@@ -177,7 +177,7 @@ interface PrivateStorageAdapter {
 }
 ```
 
-当前已实现 `LocalPrivateStorageAdapter`，并保留 `COSPrivateStorageAdapter` 边界。COS 实现必须使用腾讯云官方 SDK，不自写签名协议；配置齐全并完成回归测试后才能把 `STORAGE_DRIVER` 切为 `cos`。业务模块只保存对象 `key` 和实际 driver，不保存临时签名 URL。
+当前同时实现 `LocalPrivateStorageAdapter` 与基于腾讯云官方 `cos-nodejs-sdk-v5` 的 `COSPrivateStorageAdapter`，不自写签名协议。COS 上传强制 private ACL、`private, no-store`、MIME 和 SHA-256 元数据，上传后以 HEAD 核对大小与校验和；失败执行受控清理，删除失败重试一次。SDK 原始错误不会进入响应或日志。业务模块只保存对象 `key` 和实际 driver，不保存临时签名 URL。
 
 ### 对象 Key
 
@@ -214,7 +214,7 @@ COS_SECRET_ID=
 COS_SECRET_KEY=
 ```
 
-Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置或官方 Adapter 尚未通过真实读写删回归时保持 `STORAGE_DRIVER=local`。
+Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置时 Adapter 快速失败并使用不含凭证的受控错误。生产已通过真实 Put、Head、Get、checksum、Delete、删除后 404 与 T019 后切换为 `STORAGE_DRIVER=cos`。
 
 完整凭证备份固定存放在 `.secrets/tencent-cloud/tencent-cloud-cos-api-credentials.xlsx`，COS 运行片段存放在同目录 `cos-runtime.env`，文件权限均为 `600`、目录权限为 `700`；服务器使用 `/home/ubuntu/Project/snorlaxden/app/.secrets/tencent-cloud/` 对应目录。`.secrets/` 必须同时被 `.gitignore`、`.dockerignore` 和 Next standalone 输出追踪排除。控制台 `Password` 不能填写到 `COS_SECRET_KEY`，只有腾讯云 API 密钥或实例角色临时凭证可供 SDK 使用。
 
