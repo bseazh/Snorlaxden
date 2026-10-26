@@ -44,6 +44,12 @@ export const Media: CollectionConfig = {
       name: 'licenseNote',
       type: 'textarea',
     },
+    { name: 'aiGenerated', type: 'checkbox', defaultValue: false, admin: { readOnly: true } },
+    { name: 'sourceImageGeneration', type: 'relationship', relationTo: 'ai-image-generations', admin: { readOnly: true } },
+    { name: 'aiProvider', type: 'text', admin: { readOnly: true } },
+    { name: 'aiModel', type: 'text', admin: { readOnly: true } },
+    { name: 'aiPromptVersion', type: 'text', admin: { readOnly: true } },
+    { name: 'sha256', type: 'text', index: true, admin: { readOnly: true } },
   ],
   hooks: auditCollectionHooks('media'),
   upload: {

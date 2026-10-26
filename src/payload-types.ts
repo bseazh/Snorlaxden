@@ -76,6 +76,7 @@ export interface Config {
     'source-materials': SourceMaterial;
     'faq-items': FaqItem;
     'ai-generations': AiGeneration;
+    'ai-image-generations': AiImageGeneration;
     'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -94,6 +95,7 @@ export interface Config {
     'source-materials': SourceMaterialsSelect<false> | SourceMaterialsSelect<true>;
     'faq-items': FaqItemsSelect<false> | FaqItemsSelect<true>;
     'ai-generations': AiGenerationsSelect<false> | AiGenerationsSelect<true>;
+    'ai-image-generations': AiImageGenerationsSelect<false> | AiImageGenerationsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -183,6 +185,12 @@ export interface Media {
   purpose: 'original_photo' | 'ai_image' | 'thumbnail' | 'other';
   visibility: 'private' | 'public';
   licenseNote?: string | null;
+  aiGenerated?: boolean | null;
+  sourceImageGeneration?: (number | null) | AiImageGeneration;
+  aiProvider?: string | null;
+  aiModel?: string | null;
+  aiPromptVersion?: string | null;
+  sha256?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -214,14 +222,56 @@ export interface Media {
   };
 }
 /**
+ * 候选图保持私有；人工选择后才进入 Media，并且只绑定文章草稿。
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
+ * via the `definition` "ai-image-generations".
  */
-export interface Tag {
+export interface AiImageGeneration {
   id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
+  creator: number | User;
+  post: number | Post;
+  referenceMaterial: number | SourceMaterial;
+  provider: 'sophnet';
+  model: string;
+  promptVersion: string;
+  status: 'queued' | 'running' | 'partially_succeeded' | 'succeeded' | 'failed' | 'cancelled' | 'selected';
+  idempotencyKey: string;
+  prompt: string;
+  request:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  candidates?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  requestedCount: number;
+  generationCallCount: number;
+  retryCount: number;
+  usage?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  selectedCandidateId?: string | null;
+  selectedMedia?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -269,6 +319,18 @@ export interface Post {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -626,6 +688,10 @@ export interface PayloadLockedDocument {
         value: number | AiGeneration;
       } | null)
     | ({
+        relationTo: 'ai-image-generations';
+        value: number | AiImageGeneration;
+      } | null)
+    | ({
         relationTo: 'audit-logs';
         value: number | AuditLog;
       } | null);
@@ -705,6 +771,12 @@ export interface MediaSelect<T extends boolean = true> {
   purpose?: T;
   visibility?: T;
   licenseNote?: T;
+  aiGenerated?: T;
+  sourceImageGeneration?: T;
+  aiProvider?: T;
+  aiModel?: T;
+  aiPromptVersion?: T;
+  sha256?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -913,6 +985,33 @@ export interface AiGenerationsSelect<T extends boolean = true> {
   errorMessage?: T;
   savedPost?: T;
   markdownPath?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-image-generations_select".
+ */
+export interface AiImageGenerationsSelect<T extends boolean = true> {
+  creator?: T;
+  post?: T;
+  referenceMaterial?: T;
+  provider?: T;
+  model?: T;
+  promptVersion?: T;
+  status?: T;
+  idempotencyKey?: T;
+  prompt?: T;
+  request?: T;
+  candidates?: T;
+  requestedCount?: T;
+  generationCallCount?: T;
+  retryCount?: T;
+  usage?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  selectedCandidateId?: T;
+  selectedMedia?: T;
   updatedAt?: T;
   createdAt?: T;
 }

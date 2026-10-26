@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-26
-> 当前里程碑：ISSUE-014 已完成｜下一工作包待确认
+> 当前里程碑：ISSUE-010 已完成｜下一工作包：CHORE-003 历史 migration 回滚链修复
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -210,9 +210,30 @@
 - [ ] 企业微信机器人、告警邮件或腾讯云监控外部接收端；当前保留 systemd 失败状态与 journald
 - [ ] 不同 CAM 主体的第二 Bucket 或跨云副本；当前 COS 加密备份只覆盖服务器故障，不覆盖同账号/Bucket 故障
 
+### 已完成｜[ISSUE-010：AI 图片生成与文章封面工作台](https://github.com/bseazh/Snorlaxden/issues/15)（P1）
+
+- [x] 建立独立 `ImageProvider` 与 SophNet/Seedream Adapter；API Key 只进入本机和服务器受限 `.env`
+- [x] 建立 `article-cover-character-v1`，只传文章摘要、人工视觉要求和合法人物参考图，不传私有正文/PDF
+- [x] 将固定人物参考资产作为本人拥有的私有 SourceMaterial 保存，并记录 MIME、大小、SHA-256、授权与来源说明
+- [x] `ai-image-generations` 持久化任务状态、Prompt 版本、幂等键、真实调用次数、用量、候选图和错误
+- [x] 候选图只存 `private/ai-image-candidates/`；管理员鉴权预览，响应 `private, no-store`，匿名请求返回 401
+- [x] Provider 临时 URL 经过 HTTPS 主机白名单、大小、MIME、图片解码和 SHA-256 校验，不保存公开直链
+- [x] 支持每日限额、10 分钟幂等防重复消费、最多两次重试和部分成功；成功候选不会重复生成
+- [x] 管理员人工选择后才创建私有正式 Media 并绑定本人文章 draft；系统无自动选图或自动发布路径
+- [x] 审计排队、完成/失败、幂等回放、重试、预览、删除、选择与绑定，不记录密钥、完整 Prompt 或临时 URL
+- [ ] 完成 T015、T017，回归 T019、公开助手/花园隔离、桌面和移动端；推送、部署和生产真实生图验收（自动化已通过，待生产部署）
+
+完成标准：合法参考图可生成私有候选封面，重复提交不重复扣费；匿名不可读取，管理员人工选择后只绑定草稿，图片故障不影响手工发布。
+
+### 下一工作包｜CHORE-003：历史 migration 回滚链修复（P1）
+
+- [ ] 修复 ISSUE-006 down migration 的历史 constraint 名称不一致
+- [ ] 在一次性隔离数据库完成完整 `up → down → up`
+- [ ] 不在生产正式库执行历史 down；只验证向前迁移和独立回滚路径
+- [ ] 更新 DX、TODO、开发日志并记录验证证据
+
 ### AI 后续增强（P1，可关闭）
 
-- [ ] ISSUE-010：图像 Provider、提示词版本和候选封面
 - [ ] 知识卡专用模板、批量任务和人工对比界面（在 ISSUE-014 文字链路稳定后评估）
 
 ## 当前明确不做

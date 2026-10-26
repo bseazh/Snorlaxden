@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0–3、COS 私有存储与生产恢复基线已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料，以及可搜索、可撤回的公开知识花园。当前工作包是 ISSUE-014「来源材料驱动的 AI 内容工作台」。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0–3、COS 私有存储、生产恢复基线与 ISSUE-010/014 AI 内容生产链路已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料、可搜索且可撤回的公开知识花园，以及文字草稿和文章封面工作台。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -65,6 +65,14 @@ flowchart TB
   AIModule --> Draft[Payload draft + Markdown 审阅副本]
   AIModule --> DeepSeek[DeepSeek API]
   AIModule --> StepFun[StepFun API]
+  Studio --> ImageModule[AI Image Module]
+  ImageModule --> Character[私有人物参考 SourceMaterial]
+  ImageModule --> SophNet[SophNet / Seedream]
+  SophNet --> Candidate[私有候选图]
+  Candidate --> COS
+  Candidate --> Review[管理员预览与人工选择]
+  Review --> Media
+  Media --> Draft
 
   PrivateVault[本机私人 Vault] --> Whitelist[显式白名单 manifest]
   Whitelist --> GardenExporter[Public Garden Exporter]
@@ -138,6 +146,13 @@ pnpm dev:db:down
 | `DEEPSEEK_MODEL` | DeepSeek 模型，可按账号权限调整 | 已配置 |
 | `AI_*_ENABLED` | AI 能力开关 | 模板默认关闭，生产仅启用文本试运行 |
 | `AI_DAILY_LIMIT` | 每位管理员每日 AI 调用上限 | 已使用，默认 20 |
+| `AI_IMAGE_ENABLED` | 是否启用管理员封面生成 | 模板默认关闭；生产启用前必须完成 Provider 与私有存储配置 |
+| `AI_IMAGE_PROVIDER` | 图片 Provider 标识 | 当前为 `sophnet` |
+| `AI_IMAGE_BASE_URL` | SophNet 图片接口 | 已配置固定 HTTPS endpoint |
+| `AI_IMAGE_API_KEY` | SophNet 服务端密钥 | 只存在于本机和服务器 `.env`，禁止提交 Git |
+| `AI_IMAGE_MODEL` | 图片模型 | 当前为 `Doubao-Seedream-5.0-pro` |
+| `AI_IMAGE_DOWNLOAD_HOSTS` | Provider 返回图片的下载主机白名单 | 已启用，防止任意 URL/SSRF |
+| `AI_IMAGE_DAILY_LIMIT` | 每位管理员每日图片真实调用上限 | 已使用，默认 8 |
 | `PUBLIC_AI_ENABLED` | 是否开放访客自由问答 | 生产按需启用；预设问答不受影响 |
 | `PUBLIC_AI_DAILY_LIMIT` | 每个访客 IP 摘要的每日自由问答上限 | 已使用，默认 10 |
 | `AUDIT_IP_HASH_SALT` | 审计日志 IP 摘要盐 | 已使用，生产必须设置随机值 |
@@ -154,6 +169,8 @@ pnpm dev:db:down
 AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择具有个人笔记、本人所有或明确授权文字的 Resource/SourceMaterial，也可补充本次个人笔记。服务端会再次验证来源，且不会把 PDF/图片原始字节发送给模型。
 
 工作流先生成“已有事实、缺失信息、待人工确认内容、允许引用来源”事实包，再据此生成结构化文章草稿。`ai-generations` 保存任务状态、当前步骤、事实包、来源关系、重试次数和实际模型调用次数；第二步失败时可以沿用已成功的事实包重试，不重复消耗第一步。每日限额按真实模型调用次数计算。成功结果只能由管理员点击“保存草稿”后写入 Payload draft 和 `content/articles/<slug>.md` 审阅副本；系统没有自动发布路径。
+
+管理员登录后可访问 `/studio/images`。图片工作台只列出本人拥有或明确获授权的私有图片 SourceMaterial 和本人文章 draft；`article-cover-character-v1` 只使用文章标题、摘要、人工视觉要求和受控人物参考图，不发送 PDF、来源正文或私人笔记。SophNet 临时 URL 必须通过 HTTPS 主机白名单、大小、MIME 和图片解码校验，随后转存到 `private/ai-image-candidates/` 私有 COS；匿名访问返回 401 且响应 `private, no-store`。只有管理员人工选择的图片才进入私有 Media 并绑定 draft，仍不会自动发布。
 
 公开站通过独立的 `/assistant` 页面提供数字花园助手，访客从主导航进入后直接看到完整会话区。预设问题直接读取已启用 FAQ，不调用模型；自由问题只把匿名访问可见的站点设置、已发布文章和项目发送给 DeepSeek，并返回站内引用。访客按加盐 IP 摘要限制每日调用次数，审计只保存问题的加盐摘要、字符数、模型和调用结果，不保存完整对话。模型不可用或超限时，预设问答仍可继续使用。
 
@@ -216,6 +233,8 @@ T020 已完成：站点所有者确认备案号为 `粤ICP备2026035659号`，�
 | 私有来源材料、授权与文件元数据 | Payload `source-materials` | PostgreSQL，仅管理员可见；入口 `/library` |
 | 私有 PDF/图片原件 | Private Storage Adapter | 本地默认 `.private-files/`；生产腾讯云私有 COS；local 卷保留用于回滚 |
 | AI 生成任务、事实包与来源关系 | Payload `ai-generations` | PostgreSQL，仅管理员可见；状态与分步结果可恢复 |
+| AI 图片任务、调用用量和候选元数据 | Payload `ai-image-generations` | PostgreSQL，仅管理员可见；幂等与失败重试 |
+| AI 私有候选封面 | Image Candidate Storage | 生产 COS `private/ai-image-candidates/`；禁止公开直链 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
 | 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |
@@ -225,6 +244,7 @@ T020 已完成：站点所有者确认备案号为 `粤ICP备2026035659号`，�
 | 上传媒体 | Payload `media` + 文件存储 | 本地 `media/`；生产 `/app/media` volume |
 | 构建期公开图片 | Git 管理的静态资产 | `public/images/` |
 | AI Prompt | 版本化代码 | `src/modules/ai/prompts/` |
+| AI 图片 Prompt | 版本化代码 | `src/modules/ai-images/prompts/` |
 
 文章不能同时以 PostgreSQL 和 Markdown 作为正式来源。所有新文章先进入 Payload draft；`content/articles/` 是便于人工审阅、版本比较和后续导入导出的 Markdown 工作副本，不决定公开状态。来源材料导出固定标记 `visibility: private`，并区分个人笔记、来源说明、授权说明和已授权文字。生产目录由 `content_data` Docker volume 持久化。
 
@@ -257,6 +277,7 @@ pnpm build
 src/app/                     Next.js 页面与 HTTP 边界
 src/modules/                 AI、内容、资源与审计等业务模块
 src/modules/source-materials/ 私有上传、存储、下载和 Markdown 导出
+src/modules/ai-images/       图片 Provider、Prompt、限额、幂等、私有候选图与人工选图
 src/modules/public-garden/  白名单校验、链接净化、原子公开导出与审计
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移

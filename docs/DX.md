@@ -1,7 +1,7 @@
 # Snorlaxden DX 与存储标准
 
 > 状态：生效
-> 最后更新：2026-10-25
+> 最后更新：2026-10-26
 > 适用范围：代码、内容、媒体、对象存储、环境变量、数据库变更、测试和发布
 
 DX（Developer Experience）标准的目标是让每个功能都有稳定的归属、数据只有一个权威来源、开发和生产可以用同一套规则验证。
@@ -31,6 +31,12 @@ src/
 │   │   ├── prompts/       带版本的运行时提示词
 │   │   ├── providers/      DeepSeek、StepFun 等供应商配置
 │   │   └── index.ts        模块公开 API
+│   ├── ai-images/
+│   │   ├── domain.ts       图片任务输入、候选图结构和稳定错误码
+│   │   ├── provider.ts     SophNet 协议、临时 URL 白名单与图片校验
+│   │   ├── storage.ts      Local/COS 私有候选图 Adapter
+│   │   ├── service.ts      限额、幂等、重试、人工选图和草稿绑定
+│   │   └── prompts/        版本化文章封面 Prompt
 │   └── content/
 │       ├── public-queries.ts 公开内容读取
 │       └── index.ts          模块公开 API
@@ -92,6 +98,8 @@ providers / infrastructure
 | 私有 PDF/图片原件 | Private Storage Adapter | 本地 `.private-files/`；生产 `/app/private-files/` | 否 |
 | FAQ/标签/站点设置 | Payload Collections/Global | PostgreSQL | 仅 Schema、seed 和迁移进入 |
 | AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 | 否 |
+| AI 图片任务 | Payload `ai-image-generations` | PostgreSQL，仅管理员可见 | 否 |
+| AI 私有候选图 | Image Candidate Storage | `private/ai-image-candidates/`，生产为 COS | 否 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读 | 否 |
 | 开发日志 | `logs/development/` | Git 工作区和 GitHub | 是 |
 | 运行日志导出 | `logs/runtime/` | 本地或服务器受控目录 | 否 |
@@ -117,6 +125,11 @@ providers / infrastructure
 - URL 使用稳定 `slug`；修改标题不自动修改已发布 slug。
 - 正文不保存临时签名 URL；外部来源保存 canonical URL 和来源说明。
 - AI 输出必须保留 `aiDisclosure=true`，且不能触发自动发布。
+- 图片只能从本人文章 draft 发起；参考图必须是当前管理员拥有、本人原创或明确获授权的私有图片 SourceMaterial。
+- 图片 Provider 默认不得接收 PDF、来源正文、私人笔记或任意附件；当前只传文章标题/摘要、人工视觉要求、版本化角色约束和单张合法参考图。
+- Provider 返回 URL 只能使用 HTTPS 与显式主机白名单；禁止跟随重定向，下载后必须检查 15MB 上限、MIME、真实图片解码、尺寸与 SHA-256，再写入私有存储。
+- 候选图不得成为 Media 或公开 URL。只有管理员显式选择后才创建 `visibility=private` 的 Media、绑定 draft 并保留 AI 元数据；发布仍是独立人工动作。
+- 图片调用按真实 `generationCallCount` 计入每日限额；相同用户、文章、参考图、参数和 Prompt 版本在 10 分钟窗口内使用幂等键复用任务。重试只补未完成数量，不重复生成已成功候选。
 - 公开 AI 助手只允许读取匿名访问控制可见的站点设置、已启用 FAQ、已发布文章和已发布项目；禁止使用 `overrideAccess` 获取知识上下文。
 - 公开助手的预设问答直接读取 FAQ，不调用模型；自由问答按 IP 摘要限额，回答必须返回站内公开引用。
 - 公开助手审计只保存问题 SHA-256、字符数、模型、引用数和结果，不保存完整问题、回答或对话历史。
@@ -217,6 +230,13 @@ COS_BUCKET=digital-1486267453
 COS_REGION=ap-guangzhou
 COS_SECRET_ID=
 COS_SECRET_KEY=
+AI_IMAGE_ENABLED=false
+AI_IMAGE_PROVIDER=sophnet
+AI_IMAGE_BASE_URL=https://www.sophnet.com/api/open-apis/projects/easyllms/imagegenerator
+AI_IMAGE_API_KEY=
+AI_IMAGE_MODEL=Doubao-Seedream-5.0-pro
+AI_IMAGE_DOWNLOAD_HOSTS=ark-acg-cn-beijing.tos-cn-beijing.volces.com
+AI_IMAGE_DAILY_LIMIT=8
 ```
 
 Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置时 Adapter 快速失败并使用不含凭证的受控错误。生产已通过真实 Put、Head、Get、checksum、Delete、删除后 404 与 T019 后切换为 `STORAGE_DRIVER=cos`。
@@ -273,6 +293,8 @@ pnpm build
 涉及公开页面、认证、编辑器或发布流程时再执行 `pnpm test:e2e`。涉及 Provider 时使用 Mock 做稳定 E2E，再单独做一次真实供应商 smoke test，真实调用不得进入 CI。
 
 生产 AI smoke 使用 `src/scripts/issue014-production-smoke.ts`：只创建带唯一标识的临时 Resource、AI generation 和 Payload draft，验证事实包、调用次数、draft 状态和来源关系后在 `finally` 清理正文数据及 Markdown；审计事件保留。不得把此脚本改成自动发布或打印私有正文。
+
+图片生产 smoke 使用 `src/scripts/issue010-production-smoke.ts`：创建临时文章 draft，使用已入库的私有人物参考 SourceMaterial 完成一次真实 SophNet 调用，验证 `inputImages=1`、幂等回放不增加调用次数、候选图进入私有 COS、人工选择后 Media 仍为 private 且文章仍为 draft。临时候选对象、任务、Media 和文章在 `finally` 清理，固定人物参考资产保留；脚本不得打印 Prompt、临时 URL 或密钥。
 
 每个提交只处理一个可描述的工作包。禁止提交 `.env`、数据库、上传媒体、私人 Markdown、Playwright 报告或构建产物。
 

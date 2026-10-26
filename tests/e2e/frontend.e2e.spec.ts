@@ -15,6 +15,13 @@ test('rejects anonymous source material listing, upload, and Markdown export', a
   expect((await request.post('http://localhost:3000/api/internal/public-garden/export')).status()).toBe(401)
   expect((await request.post('http://localhost:3000/api/internal/ai/workflow', { data: {} })).status()).toBe(401)
   expect((await request.post('http://localhost:3000/api/internal/ai/workflow/1/retry')).status()).toBe(401)
+  const imageGenerate = await request.post('http://localhost:3000/api/internal/ai/images/generate', { data: {} })
+  expect(imageGenerate.status()).toBe(401)
+  expect(imageGenerate.headers()['cache-control']).toContain('private')
+  expect(imageGenerate.headers()['cache-control']).toContain('no-store')
+  const imagePreview = await request.get('http://localhost:3000/api/internal/ai/images/1/candidates/00000000-0000-0000-0000-000000000000')
+  expect(imagePreview.status()).toBe(401)
+  expect(imagePreview.headers()['cache-control']).toContain('no-store')
 })
 
 test.describe('Public digital garden', () => {

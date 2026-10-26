@@ -154,4 +154,19 @@ test.describe('Admin Panel', () => {
     await expect(page.getByText('草稿已保存')).toBeVisible()
     await expect(page.getByText('content/articles/ai-test-draft.md')).toBeVisible()
   })
+
+  test('shows the protected AI cover workbench on desktop and mobile', async () => {
+    await page.goto('http://localhost:3000/studio/images')
+    await expect(page.getByRole('heading', { name: 'AI 封面工作台' })).toBeVisible()
+    await expect(page.getByText('SophNet')).toBeVisible()
+    await expect(page.getByLabel('文章草稿')).toBeVisible()
+    await expect(page.getByLabel('人物参考资产')).toBeVisible()
+    await expect(page.getByText('AI 不会自动选择图片或发布文章')).toBeVisible()
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }))
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
+    await expect(page.getByRole('heading', { name: 'AI 封面工作台' })).toBeVisible()
+    await page.setViewportSize({ width: 1280, height: 720 })
+  })
 })
