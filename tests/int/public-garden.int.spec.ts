@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { access, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises'
+import { access, lstat, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -71,6 +71,7 @@ describe('ISSUE-007 public garden exporter', () => {
     expect(persistedManifest).not.toContain('Public/index.md')
     expect(persistedManifest).not.toContain('Assets/owned.png')
     expect(events).toEqual([expect.objectContaining({ action: 'public-garden.exported', outcome: 'success' })])
+    expect((await lstat(outputDirectory)).mode & 0o777).toBe(0o755)
 
     const garden = await getPublicGarden(outputDirectory)
     expect(garden.notes.map((note) => note.title)).toEqual(['公开首页', '第二页'])

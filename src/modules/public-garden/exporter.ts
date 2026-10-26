@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import matter from 'gray-matter'
@@ -305,6 +305,7 @@ export async function exportPublicGarden(input: {
       await writeFile(path.join(temporary, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, { encoding: 'utf8', flag: 'wx', mode: 0o644 })
       await writeFile(path.join(temporary, OUTPUT_MARKER), 'managed by Snorlaxden public garden exporter\n', { encoding: 'utf8', flag: 'wx', mode: 0o644 })
       await writeFile(path.join(temporary, '.gitignore'), '*\n!.gitignore\n', { encoding: 'utf8', flag: 'wx', mode: 0o644 })
+      await chmod(temporary, 0o755)
 
       const outputExists = await lstat(outputDirectory).then(() => true).catch(() => false)
       if (outputExists) { await rename(outputDirectory, backup); movedExisting = true }
