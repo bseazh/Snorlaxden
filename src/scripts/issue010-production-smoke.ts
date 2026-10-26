@@ -14,6 +14,17 @@ const sources = await payload.find({
 const reference = sources.docs[0]
 if (!reference) throw new Error('Character reference is not imported.')
 
+async function cleanupStaleSmokeRecords() {
+  const stalePosts = await payload.find({ collection: 'posts', depth: 0, limit: 100, overrideAccess: true, where: { slug: { contains: 'issue010-smoke-' } } })
+  for (const post of stalePosts.docs) {
+    const coverId = post.cover && typeof post.cover === 'object' ? post.cover.id : post.cover
+    await payload.delete({ collection: 'posts', id: post.id, overrideAccess: true })
+    if (coverId) await payload.delete({ collection: 'media', id: coverId, overrideAccess: true }).catch(() => undefined)
+  }
+}
+
+await cleanupStaleSmokeRecords()
+
 const stamp = Date.now()
 let postId: number | string | undefined
 let generationId: number | string | undefined
@@ -58,7 +69,7 @@ try {
       for (const candidate of parseCandidates(record.candidates)) await getImageCandidateStorage(candidate.storageDriver).delete(candidate.storageKey).catch(() => undefined)
     }
   }
+  if (generationId) await payload.delete({ collection: 'ai-image-generations', id: generationId, overrideAccess: true }).catch(() => undefined)
   if (postId) await payload.delete({ collection: 'posts', id: postId, overrideAccess: true }).catch(() => undefined)
   if (mediaId) await payload.delete({ collection: 'media', id: mediaId, overrideAccess: true }).catch(() => undefined)
-  if (generationId) await payload.delete({ collection: 'ai-image-generations', id: generationId, overrideAccess: true }).catch(() => undefined)
 }
