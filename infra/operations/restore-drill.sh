@@ -20,6 +20,7 @@ fail() { echo "RESTORE_DRILL_FAILED code=$1" >&2; exit 1; }
 # shellcheck disable=SC1090
 source "$SECRET_FILE"
 [[ -n "${BACKUP_ENCRYPTION_PASSPHRASE:-}" ]] || fail PASSPHRASE_MISSING
+export BACKUP_ENCRYPTION_PASSPHRASE
 
 WORK="$(mktemp -d "$BACKUP_ROOT/.restore-${BATCH_ID}.XXXXXX")"
 CONTAINER="snorlaxden-restore-${BATCH_ID//[^a-zA-Z0-9]/}-$$"

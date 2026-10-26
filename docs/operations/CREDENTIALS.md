@@ -33,3 +33,16 @@
 - 密钥创建、轮换、禁用或删除后更新本页状态和 `logs/development/`，但不记录真实值。
 - 如果凭证意外进入 Git、构建上下文、日志或截图，应立即禁用并轮换，不能只删除文件。
 - `pnpm build` 完成后会自动运行 `src/scripts/sanitize-standalone.mjs`，删除并复检 `.next/standalone` 中的 `.env*` 和 `.secrets`；发现残留必须让构建失败。
+
+## 备份加密口令
+
+| 项目 | 当前值 |
+|---|---|
+| 用途 | ISSUE-012 生产数据库与持久文件备份加密 |
+| 本机位置 | `.secrets/backup/backup.env` |
+| 服务器位置 | `/home/ubuntu/Project/snorlaxden/app/.secrets/backup/backup.env` |
+| 权限 | 目录 `700`，文件 `600` |
+| Git/日志策略 | 被 Git、Docker context 与 standalone 排除；不记录真实值 |
+| 恢复验证 | 2026-10-26 使用同一口令完成隔离解密和 T018 恢复 |
+
+口令丢失后历史加密包不可恢复。轮换口令只影响新批次；历史批次应在保留期内继续保存对应旧口令，或经过受控解密、重新加密与校验流程迁移。

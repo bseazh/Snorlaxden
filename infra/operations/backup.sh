@@ -15,6 +15,7 @@ fail() { echo "BACKUP_FAILED code=$1" >&2; exit 1; }
 # shellcheck disable=SC1090
 source "$SECRET_FILE"
 [[ -n "${BACKUP_ENCRYPTION_PASSPHRASE:-}" ]] || fail PASSPHRASE_MISSING
+export BACKUP_ENCRYPTION_PASSPHRASE
 for command in docker openssl sha256sum tar flock node; do command -v "$command" >/dev/null || fail "COMMAND_MISSING_${command}"; done
 
 mkdir -p "$BACKUP_ROOT" "$BACKUP_ROOT/drills"
@@ -27,7 +28,11 @@ BATCH_ID="$(date -u +%Y%m%dT%H%M%SZ)-$COMMIT"
 STAGING="$(mktemp -d "$BACKUP_ROOT/.staging-${BATCH_ID}.XXXXXX")"
 FINAL="$BACKUP_ROOT/$BATCH_ID"
 PLAIN_ARCHIVE="$BACKUP_ROOT/.${BATCH_ID}.tar"
-cleanup() { rm -rf "$STAGING"; rm -f "$PLAIN_ARCHIVE"; }
+cleanup() {
+  rm -rf "$STAGING"
+  rm -f "$PLAIN_ARCHIVE"
+  if [[ -d "$FINAL" && ! -f "$FINAL/SUCCESS" ]]; then rm -rf "$FINAL"; fi
+}
 trap cleanup EXIT
 
 cd "$PROJECT_DIR"

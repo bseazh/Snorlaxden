@@ -191,6 +191,14 @@ docker compose -f compose.production.yaml up -d --build
 
 生产 `DATABASE_URL` 的主机名必须使用 Compose 服务名 `db`，不能使用 `127.0.0.1`。
 
+### 生产备份与健康检查
+
+生产已启用两组 systemd timer：每日生成同批次 PostgreSQL/媒体/内容/公开花园/COS 清单备份，每 15 分钟检查 Web、数据库、COS、容器重启、磁盘、证书和备份新鲜度。备份在本地临时目录完成 SHA-256 后加密，服务器滚动保留 14 天，并上传到私有 COS `private/backups/<batch>/`；备份口令只存在于本机与服务器 `.secrets/backup/backup.env`。
+
+2026-10-26 已完成 T018 隔离恢复演练：一次性 PostgreSQL 容器恢复成功，核心表计数和管理员记录一致，四类文件归档均可提取，临时明文和恢复容器已清理。完整操作、故障恢复和敏感内容回滚边界见 [生产备份、恢复与回滚手册](docs/operations/BACKUP-RESTORE.md)。
+
+当前限制：加密副本虽已离开服务器进入 COS，但仍与原件位于同一腾讯云账号和 Bucket，尚不能覆盖账号级故障；systemd 能产生失败状态与 journald 记录，但用户尚未提供短信、邮件或企业微信接收端，因此没有外部告警送达。T020 的 HTTPS/TLS 已通过，ICP备案仍需站点所有者提供正式备案号或查询结果。
+
 ## 内容与文件位置
 
 | 数据 | 权威位置 | 当前物理位置 |
