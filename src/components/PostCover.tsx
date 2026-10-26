@@ -3,10 +3,10 @@ import Image from 'next/image'
 import type { Media, Post } from '@/payload-types'
 
 const fallbackCovers: Record<Post['contentType'], string> = {
-  essay: '/images/article-covers/digital-garden.png',
-  knowledge: '/images/article-covers/medical-ai.png',
-  'project-note': '/images/article-covers/hackathon-practice.png',
-  reflection: '/images/article-covers/default-editorial.png',
+  essay: '/images/article-covers/digital-garden.webp',
+  knowledge: '/images/article-covers/medical-ai.webp',
+  'project-note': '/images/article-covers/hackathon-practice.webp',
+  reflection: '/images/article-covers/default-editorial.webp',
 }
 
 function mediaCover(cover: Post['cover'], size: 'card' | 'wide') {
@@ -16,7 +16,7 @@ function mediaCover(cover: Post['cover'], size: 'card' | 'wide') {
 }
 
 export function getPostCover(post: Post, size: 'card' | 'wide' = 'card') {
-  return mediaCover(post.cover, size) || fallbackCovers[post.contentType] || '/images/article-covers/default-editorial.png'
+  return mediaCover(post.cover, size) || fallbackCovers[post.contentType] || '/images/article-covers/default-editorial.webp'
 }
 
 export function PostCover({ className, post, priority = false, size = 'card' }: {
