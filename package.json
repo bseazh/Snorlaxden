@@ -13,6 +13,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/seed.ts",
     "logs:export": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/export-audit-logs.ts",
+    "site:icp:set": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/set-icp-number.ts",
     "storage:cos:smoke": "cross-env NODE_OPTIONS=--no-deprecation node --import=tsx/esm src/scripts/cos-storage-smoke.ts",
     "standalone:sanitize": "node src/scripts/sanitize-standalone.mjs",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",

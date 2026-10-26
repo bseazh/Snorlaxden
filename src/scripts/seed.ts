@@ -95,6 +95,7 @@ await payload.updateGlobal({
 研究方向聚焦大模型赋能医疗科研，包括医学文献解析、科研文本处理与科研数据智能分析，面向医务科研人员开展 AI 能力赋能，推动技术在医院科研场景中落地。
     `),
     contactEmail: 'bseazh@163.com',
+    icpNumber: '粤ICP备2026035659号',
     socialLinks: [
       { label: 'GitHub', url: 'https://github.com/bseazh' },
       { label: 'Email', url: 'mailto:bseazh@163.com' },

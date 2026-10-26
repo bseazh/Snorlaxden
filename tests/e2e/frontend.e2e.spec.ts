@@ -23,6 +23,7 @@ test.describe('Public digital garden', () => {
     await expect(page.getByText('LawyerBuddy', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('文章与实践笔记')).toBeVisible()
     await expect(page.getByText('你目前主要研究什么？')).toBeVisible()
+    await expect(page.getByRole('link', { name: '粤ICP备2026035659号' })).toHaveAttribute('href', 'https://beian.miit.gov.cn/')
   })
 
   test('renders project and article detail pages', async ({ page }) => {

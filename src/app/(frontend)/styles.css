@@ -251,6 +251,8 @@ button, input, textarea, select { font: inherit; }
 .footer-grid p { margin-block: 6px 0; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; }
 .footer-meta { color: #9ca19c; font-size: 13px; }
+.footer-meta a { display: inline-block; margin-top: 6px; color: inherit; }
+.footer-meta a:hover { color: var(--white); }
 
 .assistant-page { min-height: calc(100svh - 68px); padding-block: 44px 70px; background: #e7ebef; }
 .assistant-page-inner { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 42px; align-items: start; }
