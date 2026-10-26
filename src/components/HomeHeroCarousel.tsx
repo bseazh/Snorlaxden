@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 const slides = [
-  { kind: 'portrait', label: '个人介绍', title: '把 AI 带进真实问题', body: '人工智能硕士 · 医疗科研 AI · 产品实践', href: '/about', action: '认识何海钊' },
-  { kind: 'medical', label: '医疗科研 AI', title: '让复杂科研工作，变得清晰可用', body: '从医学文献解析、科研文本处理，到数据智能分析与医院培训落地。', href: '/journal', action: '阅读实践笔记' },
-  { kind: 'making', label: '从想法到系统', title: '持续做出，可以验证的东西', body: '算法竞赛、黑客松、开源产品与长期生长的数字花园。', href: '/projects', action: '浏览项目作品' },
+  { kind: 'portrait', image: '/images/hehaizhao-portrait.jpg', imageAlt: '何海钊在现场分享人工智能实践', label: '个人介绍', title: '把 AI 带进真实问题', body: '人工智能硕士 · 医疗科研 AI · 产品实践', href: '/about', action: '认识何海钊' },
+  { kind: 'medical', image: '/images/home-gallery/medical-ai-hero.webp', imageAlt: '医学文献、数据节点与知识网络构成的医疗科研 AI 插画', label: '医疗科研 AI', title: '让复杂科研工作，变得清晰可用', body: '从医学文献解析、科研文本处理，到数据智能分析与医院培训落地。', href: '/journal', action: '阅读实践笔记' },
+  { kind: 'making', image: '/images/home-gallery/making-systems-hero.webp', imageAlt: '由草图、模块和原型组成的创意系统实践插画', label: '从想法到系统', title: '持续做出，可以验证的东西', body: '算法竞赛、黑客松、开源产品与长期生长的数字花园。', href: '/projects', action: '浏览项目作品' },
 ] as const
 
 export function HomeHeroCarousel({ displayName }: { displayName: string }) {
@@ -21,7 +21,7 @@ export function HomeHeroCarousel({ displayName }: { displayName: string }) {
     <section className="home-showcase" aria-roledescription="carousel" aria-label="何海钊的研究与实践">
       {slides.map((slide, index) => (
         <article aria-hidden={active !== index} className={`home-slide home-slide-${slide.kind} ${active === index ? 'is-active' : ''}`} inert={active !== index} key={slide.kind}>
-          {slide.kind === 'portrait' ? <Image alt="何海钊在现场分享人工智能实践" className="home-slide-photo" fill priority sizes="100vw" src="/images/hehaizhao-portrait.jpg" /> : <div className="home-slide-art" aria-hidden="true"><i /><i /><i /><i /><i /></div>}
+          <Image alt={slide.imageAlt} className="home-slide-photo" fill priority={index === 0} sizes="100vw" src={slide.image} />
           <div className="home-slide-wash" aria-hidden="true" />
           <div className="home-slide-copy">
             <span className="home-slide-label">{slide.label}</span>
