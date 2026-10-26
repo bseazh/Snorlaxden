@@ -16,7 +16,7 @@
 content/
 ├── inbox/          本地待整理素材，默认全部忽略，禁止提交私人原文
 ├── exports/        Payload 导出的 Markdown，默认全部忽略
-├── public-garden/  白名单导出器生成的 Quartz 唯一输入，默认全部忽略
+├── public-garden/  白名单导出器生成的 `/garden` 唯一输入，默认全部忽略
 └── templates/      可提交的公开内容模板
 ```
 
@@ -29,7 +29,7 @@ content/
 5. 需要 Markdown 时，通过管理员导出接口写入 `content/exports/`；已存在文件不会被静默覆盖。
 6. 为公开笔记同时设置 `publish: true` 和 `visibility: public`，并在实际白名单 manifest 中逐项列出笔记和获授权附件。
 7. 由管理员调用 `POST /api/internal/public-garden/export`；导出器只读取环境变量指定的固定路径，原子全量替换 `content/public-garden/`。
-8. 人工审阅生成的 `manifest.json`；ISSUE-008 中 Quartz 只能读取这个目录。
+8. 人工审阅生成的 `manifest.json`；`/garden` 只读取 manifest 点名且 SHA-256 匹配的文件。
 
 白名单 schema 示例在 `content/templates/public-garden-manifest.json`。实际 manifest 和私人 Vault 不进入本仓库；附件 SHA-256 可用 `shasum -a 256 <file>` 计算。
 

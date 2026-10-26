@@ -57,6 +57,7 @@ services:
     environment:
       CONTENT_ARTICLE_DIR: /app/content-data/articles
       CONTENT_EXPORT_DIR: /app/content-data/exports
+      PUBLIC_GARDEN_OUTPUT_DIR: /app/public-garden
       STORAGE_LOCAL_DIR: /app/private-files
     ports:
       - "127.0.0.1:3999:3000"
@@ -64,6 +65,7 @@ services:
       - media_data:/app/media
       - private_media_data:/app/private-files
       - content_data:/app/content-data
+      - ./content/public-garden:/app/public-garden
     depends_on:
       seed:
         condition: service_completed_successfully

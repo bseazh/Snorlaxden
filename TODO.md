@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
-> 最后更新：2026-10-25
-> 当前里程碑：Sprint 3｜ISSUE-007 已完成，下一工作包 ISSUE-008 Quartz 构建与知识花园体验
+> 最后更新：2026-10-26
+> 当前里程碑：Sprint 3 已完成｜下一工作包：COS Private Storage Adapter
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -154,15 +154,24 @@
 
 完成标准：公开构建目录只包含白名单允许的 Markdown 与附件；任何私密引用、越界路径或 symlink 均被阻断；撤回后不残留公开副本。
 
-说明：验收编号 T007 还包含 Quartz 页面与双链，T009 包含公开 URL 和缓存失效；这两项必须在 ISSUE-008 部署后完成，不能仅凭导出器测试标记完成。
+#### 已完成｜[ISSUE-008：Quartz 构建与知识花园体验](https://github.com/bseazh/Snorlaxden/issues/7)
 
-#### 下一工作包
+- [x] `/garden` 只读取 `content/public-garden/manifest.json` 点名且 SHA-256 匹配的公开副本
+- [x] 借鉴 Quartz 实现目录、Markdown、wikilink、反向链接、标签索引和全文搜索
+- [x] 公开附件只通过 manifest 校验的受控路由响应，不开放目录静态读取
+- [x] 导出后触发 `/garden` 路由失效；撤回通过原子替换同步清除页面、搜索、sitemap 与附件
+- [x] 保持公开花园绝不直接读取私人 Obsidian Vault、`content/exports/` 或 manifest 外文件
+- [x] 完成桌面端和 390px 移动端体验；知识图谱继续作为性能评估后的渐进增强项
+- [x] 验证完整 T007–T009；回归 T010
 
-- [ ] [ISSUE-008：Quartz 构建与知识花园体验](https://github.com/bseazh/Snorlaxden/issues/7)
-- [ ] 借鉴 Quartz 实现目录、wikilink、反向链接、标签索引和全文搜索
-- [ ] 知识图谱作为渐进增强项，先验证移动端可用性与性能再默认启用
-- [ ] 保持 Quartz 只读取公开导出副本，绝不直接读取私人 Obsidian Vault
-- [ ] 验证完整 T007–T009；回归 T010
+完成标准：公开笔记支持搜索、标签、双链和反向链接；撤回后旧 URL 与附件返回 404 且不缓存；manifest 外或 checksum 不匹配内容拒绝读取。
+
+### 下一工作包｜COS Private Storage Adapter（P0）
+
+- [ ] 使用腾讯云官方 SDK 实现 `COSPrivateStorageAdapter`，不自写签名
+- [ ] 保持私有对象只通过管理员鉴权下载，禁止公开 Bucket URL 和持久化签名 URL
+- [ ] 增加上传失败清理、删除重试、checksum 和 T019 回归
+- [ ] 完成 local → COS 复制、校验、切读路径和可回滚迁移后再设置 `STORAGE_DRIVER=cos`
 
 ### AI 后续增强（P1，可关闭）
 

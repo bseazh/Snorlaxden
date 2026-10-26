@@ -5,7 +5,14 @@ import path from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { exportPublicGarden, PublicGardenError, type PublicGardenAuditEvent } from '@/modules/public-garden'
+import {
+  exportPublicGarden,
+  getPublicGarden,
+  getPublicGardenNote,
+  PublicGardenError,
+  readPublicGardenAttachment,
+  type PublicGardenAuditEvent,
+} from '@/modules/public-garden'
 
 const temporaryDirectories: string[] = []
 const publicNote = (title: string, body: string) => `---\ntitle: ${title}\npublish: true\nvisibility: public\n---\n\n# ${title}\n\n${body}\n`
@@ -64,6 +71,12 @@ describe('ISSUE-007 public garden exporter', () => {
     expect(persistedManifest).not.toContain('Public/index.md')
     expect(persistedManifest).not.toContain('Assets/owned.png')
     expect(events).toEqual([expect.objectContaining({ action: 'public-garden.exported', outcome: 'success' })])
+
+    const garden = await getPublicGarden(outputDirectory)
+    expect(garden.notes.map((note) => note.title)).toEqual(['公开首页', '第二页'])
+    expect(garden.notes.find((note) => note.title === '第二页')?.backlinks).toEqual([{ title: '公开首页', url: '/garden' }])
+    expect((await getPublicGardenNote(['notes', 'second'], outputDirectory)).note?.body).toContain('公开内容')
+    expect(await readPublicGardenAttachment('assets/owned.png', outputDirectory)).toMatchObject({ entry: { authorization: 'owned' } })
   })
 
   it('T008 removes private note identities and blocks unlicensed private attachments without replacing the last good export', async () => {
@@ -128,5 +141,23 @@ describe('ISSUE-007 public garden exporter', () => {
     await expect(access(path.join(outputDirectory, 'withdraw.md'))).rejects.toThrow()
     await expect(access(path.join(outputDirectory, 'assets/owned.png'))).rejects.toThrow()
     expect(manifest.removedEntries).toBeGreaterThanOrEqual(3)
+    expect((await getPublicGardenNote(['withdraw'], outputDirectory)).note).toBeNull()
+    expect(await readPublicGardenAttachment('assets/owned.png', outputDirectory)).toBeNull()
+    expect((await getPublicGarden(outputDirectory)).notes.map((note) => note.title)).toEqual(['保留'])
+  })
+
+  it('T008 reads only manifest entries and rejects content changed after export', async () => {
+    const { outputDirectory, sourceRoot } = await fixture()
+    await writeFile(path.join(sourceRoot, 'Public/index.md'), publicNote('公开首页', '允许内容'))
+    await exportPublicGarden({
+      config: { attachments: [], notes: [{ output: 'index.md', source: 'Public/index.md' }], version: 1 },
+      outputDirectory,
+      sourceRoot,
+    })
+    await writeFile(path.join(outputDirectory, 'private.md'), publicNote('越权文件', 'SNORLAXDEN_PRIVATE_TEST_MARKER'))
+    expect((await getPublicGarden(outputDirectory)).notes.map((note) => note.title)).toEqual(['公开首页'])
+
+    await writeFile(path.join(outputDirectory, 'index.md'), publicNote('被篡改', '不应展示'))
+    await expect(getPublicGarden(outputDirectory)).rejects.toThrow('PUBLIC_GARDEN_CHECKSUM_MISMATCH')
   })
 })

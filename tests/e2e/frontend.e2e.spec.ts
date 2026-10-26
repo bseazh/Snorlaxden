@@ -33,6 +33,30 @@ test.describe('Public digital garden', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('OpenClaw')
   })
 
+  test('T007 renders garden search, links, table of contents, and backlinks', async ({ page }) => {
+    await page.goto('http://localhost:3000/garden')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('持续生长的网络')
+    const noteList = page.getByRole('region', { name: '公开笔记' })
+    await expect(noteList.getByRole('link', { name: '大模型如何服务医疗科研', exact: true })).toBeVisible()
+    await page.getByRole('searchbox', { name: '搜索公开花园' }).fill('百强医院')
+    await page.getByRole('button', { name: '搜索' }).click()
+    await expect(page).toHaveURL(/q=/)
+    await expect(noteList.getByRole('link', { name: '大模型如何服务医疗科研', exact: true })).toBeVisible()
+    await expect(noteList.getByRole('link', { name: '从 30 余场黑客松中学到的事', exact: true })).toHaveCount(0)
+
+    await page.goto('http://localhost:3000/garden/research/medical-ai')
+    await expect(page.getByRole('heading', { level: 1, name: '大模型如何服务医疗科研' })).toBeVisible()
+    await expect(page.getByRole('complementary', { name: '本页目录' }).getByRole('link', { name: '三个现实入口' })).toBeVisible()
+    await expect(page.getByRole('region', { name: '反向链接' }).getByRole('link', { name: /^从 30 余场黑客松中学到的事/ })).toBeVisible()
+  })
+
+  test('T009 returns 404 without cache persistence for withdrawn garden paths and attachments', async ({ request }) => {
+    expect((await request.get('http://localhost:3000/garden/withdrawn-note')).status()).toBe(404)
+    const attachment = await request.get('http://localhost:3000/garden/files/private/withdrawn.pdf')
+    expect(attachment.status()).toBe(404)
+    expect(attachment.headers()['cache-control']).toContain('no-store')
+  })
+
   test('renders the assistant as a dedicated page and answers a preset without an AI request', async ({ page }) => {
     let assistantRequests = 0
     page.on('request', (request) => {
@@ -63,6 +87,18 @@ test.describe('Public digital garden', () => {
     const assistantBox = await page.getByRole('region', { name: '何海钊 AI 助手' }).boundingBox()
     expect(assistantBox?.x).toBeGreaterThanOrEqual(0)
     expect(assistantBox?.width).toBeLessThanOrEqual(390)
+  })
+
+  test('garden has no horizontal overflow on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('http://localhost:3000/garden/research/medical-ai')
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }))
+    expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
+    await expect(page.getByRole('navigation', { name: '花园目录' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: '大模型如何服务医疗科研' })).toBeVisible()
   })
 
   test('returns not found for an unknown or unpublished slug', async ({ page }) => {

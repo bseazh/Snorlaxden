@@ -1,4 +1,5 @@
 import config from '@payload-config'
+import { revalidatePath } from 'next/cache'
 import { getPayload } from 'payload'
 
 import { exportConfiguredPublicGarden, PublicGardenError } from '@/modules/public-garden'
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
   if (!user) return Response.json({ code: 'UNAUTHORIZED', message: '请先登录管理员账号。' }, { headers: noStore, status: 401 })
   try {
     const manifest = await exportConfiguredPublicGarden(payload, user, { headers: request.headers })
+    revalidatePath('/garden', 'layout')
     return Response.json({ manifest }, { headers: noStore })
   } catch (error) {
     if (error instanceof PublicGardenError) return Response.json({ code: error.code, message: error.message }, { headers: noStore, status: error.status })

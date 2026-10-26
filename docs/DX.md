@@ -98,7 +98,7 @@ providers / infrastructure
 | AI 保存的 Markdown 草稿 | Payload `posts` 草稿为权威；Markdown 为审阅副本 | 本地 `content/articles/`；生产 `/app/content-data/articles/` | 默认忽略正文 |
 | 待导入 Markdown | `content/inbox/` | 开发者本机 | 默认忽略 |
 | Markdown 导出 | `content/exports/` | 生成目录 | 默认忽略 |
-| Quartz 公开副本 | `content/public-garden/` | 白名单构建目录 | 默认忽略，独立发布 |
+| 公开花园副本 | `content/public-garden/` | `/garden` 唯一读取的白名单构建目录 | 默认忽略，生产挂载 |
 | 品牌静态资产 | `public/images/` | 应用镜像 | 是，必须可公开且体积受控 |
 | 上传媒体元数据 | Payload `media` | PostgreSQL | 否 |
 | 上传媒体文件 | Storage Adapter | 当前 `media/` 或 `/app/media` | 否 |
@@ -132,8 +132,11 @@ providers / infrastructure
 
 ### 公开花园导出规则
 
-- 私人 Vault 必须位于 Git 仓库和服务器之外；Quartz 只能读取 `content/public-garden/` 的生成副本。
+- 私人 Vault 必须位于 Git 仓库和服务器之外；公开花园读取器只能读取 `content/public-garden/manifest.json` 点名且 checksum 匹配的生成副本。
 - 实际白名单 manifest 视为本地受控配置，不提交 Git。仓库中的 `content/templates/public-garden-manifest.json` 只用于说明 schema。
+- `/garden`、搜索、标签、反向链接和 sitemap 使用同一个 manifest 索引，不允许另建绕过白名单的扫描器。附件只能通过 `/garden/files/*` 动态路由读取，并再次验证 manifest、路径和 SHA-256。
+- 页面按请求读取当前原子目录，导出成功后调用 `revalidatePath('/garden', 'layout')`；附件响应固定 `public, no-store, max-age=0`。撤回后旧页面、附件、搜索和 sitemap 必须在同一版本消失。
+- 生产通过只读边界清晰的 bind mount 将服务器 `content/public-garden/` 挂载到容器 `/app/public-garden`；不得把私人 Vault 或 `content/exports/` 挂进 Web 容器。
 - 笔记必须同时满足 manifest 点名、`publish: true`、`visibility: public`；未公开笔记引用统一降级为不含原标题和路径的 `[非公开笔记]`。
 - 附件必须在 manifest 逐项声明来源、公开目标、授权依据和预期 SHA-256；内容 magic bytes 只允许 PDF、JPEG、PNG、WebP、AVIF。
 - 拒绝 `..`、绝对路径、反斜杠路径、隐藏目录、不安全协议、原始 HTML 文件引用、symlink 和引用式本地 Markdown 链接。
@@ -162,7 +165,7 @@ providers / infrastructure
 - 私有对象只通过 `/api/internal/source-materials/:id/download` 下载；先验证管理员，再按数据库 object key 读取。成功、拒绝与失败响应都使用 `private, no-store`。
 - 上传只接受文件头与声明 MIME 一致的 PDF、JPEG、PNG、WebP、AVIF，单文件最多 10MB；SHA-256 唯一索引和上传前查询共同阻止重复文件。
 - 静态个人形象等公开构建资产：`public/images/`。
-- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；现有子账号 CSV 的 SecretId/SecretKey 为空，控制台登录未验证成功，生产继续使用 local，不能把控制台密码、Bucket 和 Region 配置误认为 COS 已接通。
+- 腾讯云 COS Bucket 已确定为 `digital-1486267453`，Region 已确认为 `ap-guangzhou`；API 凭证已保存于本机和服务器私密环境，并从两端通过真实读写删测试。生产仍使用 local，因为官方 COS Adapter 尚未实现和完成应用级回归。
 
 ### 目标 Adapter
 
@@ -213,7 +216,7 @@ COS_SECRET_KEY=
 
 Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.env`，权限 `600`。缺任意 COS 必需配置或官方 Adapter 尚未通过真实读写删回归时保持 `STORAGE_DRIVER=local`。
 
-本机导出的凭证 CSV 固定存放在 `.secrets/tencent-cloud/`，文件权限 `600`；`.secrets/` 必须同时被 `.gitignore`、`.dockerignore` 和 Next standalone 输出追踪排除。CSV 中的控制台 `Password` 不能填写到 `COS_SECRET_KEY`，只有腾讯云 API 密钥或实例角色临时凭证可供 SDK 使用。
+完整凭证备份固定存放在 `.secrets/tencent-cloud/tencent-cloud-cos-api-credentials.xlsx`，COS 运行片段存放在同目录 `cos-runtime.env`，文件权限均为 `600`、目录权限为 `700`；服务器使用 `/home/ubuntu/Project/snorlaxden/app/.secrets/tencent-cloud/` 对应目录。`.secrets/` 必须同时被 `.gitignore`、`.dockerignore` 和 Next standalone 输出追踪排除。控制台 `Password` 不能填写到 `COS_SECRET_KEY`，只有腾讯云 API 密钥或实例角色临时凭证可供 SDK 使用。
 
 由于 Next standalone 可能主动复制 dotenv 文件，`pnpm build` 必须在编译后执行 `src/scripts/sanitize-standalone.mjs`，删除并复检产物内所有 `.env*` 和 `.secrets`；不能只依赖 `.dockerignore` 或 tracing exclude。
 

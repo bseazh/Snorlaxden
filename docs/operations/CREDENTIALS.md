@@ -11,21 +11,21 @@
 | 用途 | Snorlaxden 私有来源材料的腾讯云 COS 专用子账号 |
 | Bucket | `digital-1486267453` |
 | Region | `ap-guangzhou` |
-| 本机凭证文件 | `.secrets/tencent-cloud/tencent-cloud-cos-subaccount-credentials.csv` |
+| 本机凭证文件 | `.secrets/tencent-cloud/tencent-cloud-cos-api-credentials.xlsx`；运行片段为同目录 `cos-runtime.env` |
+| 服务器凭证文件 | `/home/ubuntu/Project/snorlaxden/app/.secrets/tencent-cloud/` 下的同名文件 |
 | 文件权限 | `600` |
 | Git/构建策略 | `.secrets/` 被 Git、Docker context 和 Next standalone 排除 |
-| 控制台登录 | 2026-10-25 自动化提交后返回登录页，未验证成功 |
-| API 凭证 | CSV 的 `SecretId`、`SecretKey` 均为空 |
-| COS API 测试 | 未执行；缺少 API 凭证或 CVM 实例角色 |
+| API 凭证 | 已写入本机与服务器 `.env`，不在本文记录真实值 |
+| COS API 测试 | 2026-10-25 本机和服务器均通过 Put、Head、Get、Delete、删除后 404 |
 | 生产存储驱动 | `local`，不得提前切换为 `cos` |
 
 ## 打通条件
 
 1. 推荐在腾讯云 CVM 上为实例绑定仅限该 Bucket 私有前缀的最小权限 CAM 角色，避免长期 SecretKey。
-2. 备选方案是为现有子用户创建一组 API 密钥，再写入本机和服务器 `.env`；不得回填到公开文档或 Git。
+2. 当前长期 API 密钥已写入本机和服务器 `.env`；不得回填到公开文档或 Git，并应建立轮换计划。
 3. 权限应只覆盖 `digital-1486267453/private/source-materials/*` 所需的上传、读取、查询和删除对象操作。
-4. 凭证就绪后必须完成 Put、Head/Get、Delete 和删除后不可读测试，再启用官方 COS SDK Adapter。
-5. 真实测试通过前保持 `STORAGE_DRIVER=local`。
+4. 凭证连通性测试已经通过；仍需实现并测试官方 COS SDK Adapter，才能启用生产驱动。
+5. Adapter 完成集成、失败回滚和 T019 回归前保持 `STORAGE_DRIVER=local`。
 
 ## 轮换与事件处理
 
