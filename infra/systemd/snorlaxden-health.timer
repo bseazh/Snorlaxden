@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic Snorlaxden production health check
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=15m
+Persistent=true
+Unit=snorlaxden-health.service
+
+[Install]
+WantedBy=timers.target

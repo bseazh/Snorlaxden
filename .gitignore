@@ -42,6 +42,8 @@ next-env.d.ts
 
 /media
 /.private-files
+/backups
+/ops-state
 
 # Playwright
 node_modules/

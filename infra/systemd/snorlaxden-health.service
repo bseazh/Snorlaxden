@@ -1,0 +1,11 @@
+[Unit]
+Description=Snorlaxden production health check
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/ubuntu/Project/snorlaxden/app/infra/operations/healthcheck.sh
+PrivateTmp=true
+NoNewPrivileges=true

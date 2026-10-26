@@ -1,0 +1,14 @@
+[Unit]
+Description=Snorlaxden encrypted production backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/ubuntu/Project/snorlaxden/app/infra/operations/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true
+NoNewPrivileges=true
