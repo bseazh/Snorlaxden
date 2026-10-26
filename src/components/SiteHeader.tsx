@@ -9,7 +9,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="brand" href="/" aria-label="何海钊数字花园首页">
-          <span className="brand-mark" aria-hidden="true">HZ</span><span>Snorlaxden</span>
+          <span className="brand-mark" aria-hidden="true">HZ</span><span><strong>何海钊</strong><small>Snorlaxden</small></span>
         </Link>
         <nav className="primary-nav" aria-label="主导航">
           {navItems.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}

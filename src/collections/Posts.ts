@@ -35,7 +35,14 @@ export const Posts: CollectionConfig = {
       ],
       required: true,
     },
-    { name: 'cover', type: 'upload', relationTo: 'media' },
+    {
+      name: 'cover',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: '正式发布前应选择一张横向封面。AI 候选图必须经人工确认后才可绑定；草稿允许暂时留空。',
+      },
+    },
     { name: 'tags', type: 'relationship', hasMany: true, relationTo: 'tags' },
     { name: 'isFeatured', type: 'checkbox', defaultValue: false },
     { name: 'publishedAt', type: 'date', index: true },

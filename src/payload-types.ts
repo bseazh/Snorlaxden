@@ -300,6 +300,9 @@ export interface Post {
     [k: string]: unknown;
   };
   contentType: 'reflection' | 'essay' | 'knowledge' | 'project-note';
+  /**
+   * 正式发布前应选择一张横向封面。AI 候选图必须经人工确认后才可绑定；草稿允许暂时留空。
+   */
   cover?: (number | null) | Media;
   tags?: (number | Tag)[] | null;
   isFeatured?: boolean | null;

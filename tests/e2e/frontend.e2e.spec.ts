@@ -28,9 +28,10 @@ test.describe('Public digital garden', () => {
   test('renders the homepage and primary content', async ({ page }) => {
     await page.goto('http://localhost:3000')
     await expect(page).toHaveTitle(/何海钊/)
-    await expect(page.getByRole('heading', { level: 1, name: '何海钊' })).toBeVisible()
+    await expect(page.getByRole('region', { name: '何海钊的研究与实践' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: '把 AI 带进真实问题' })).toBeVisible()
     await expect(page.getByText('LawyerBuddy', { exact: true }).first()).toBeVisible()
-    await expect(page.getByText('文章与实践笔记')).toBeVisible()
+    await expect(page.getByText('最近写下的东西')).toBeVisible()
     await expect(page.getByText('你目前主要研究什么？')).toBeVisible()
     await expect(page.getByRole('link', { name: '粤ICP备2026035659号' })).toHaveAttribute('href', 'https://beian.miit.gov.cn/')
     await expect(page.getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '管理入口' })).toHaveAttribute('href', '/manage')

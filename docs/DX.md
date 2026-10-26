@@ -108,6 +108,7 @@ providers / infrastructure
 | Markdown 导出 | `content/exports/` | 生成目录 | 默认忽略 |
 | 公开花园副本 | `content/public-garden/` | `/garden` 唯一读取的白名单构建目录 | 默认忽略，生产挂载 |
 | 品牌静态资产 | `public/images/` | 应用镜像 | 是，必须可公开且体积受控 |
+| 文章缺省主题封面 | `public/images/article-covers/` | 应用镜像 | 是，必须原创或有明确公开授权，不得包含密钥/私人素材 |
 | 上传媒体元数据 | Payload `media` | PostgreSQL | 否 |
 | 上传媒体文件 | Storage Adapter | 当前 `media/` 或 `/app/media` | 否 |
 
@@ -123,6 +124,8 @@ providers / infrastructure
 - `ai-generations` 状态集合为 `queued/running/succeeded/failed/cancelled/saved_as_draft`，并保存 `currentStep`、`retryCount` 和 `modelCallCount`。每日限额按 `modelCallCount` 求和，而不是按任务条数估算。
 - 生成任务必须保留所选 Resource/SourceMaterial 关系；保存 Post 草稿时同步写入 `sourceResources` 和 `sourceMaterials`，便于人工溯源。
 - 发布条件：事实、来源、版权、隐私和 SEO 均已人工检查。
+- 文章草稿可以暂时没有 `cover`，但正式发布前应由管理员选择一张横向封面并检查裁切、替代文字、授权和 AI 标识；前台缺图降级不能代替发布审核。
+- 首页、文章列表和详情只能通过共享 `PostCover` 规则读取封面：已发布 Payload Media 优先，缺图时按内容类型使用 `public/images/article-covers/` 的原创主题配图，并向访客明确标记“主题配图”。
 - URL 使用稳定 `slug`；修改标题不自动修改已发布 slug。
 - 正文不保存临时签名 URL；外部来源保存 canonical URL 和来源说明。
 - AI 输出必须保留 `aiDisclosure=true`，且不能触发自动发布。
