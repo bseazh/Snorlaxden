@@ -14,6 +14,10 @@ function relationId(value: unknown) {
   return null
 }
 
+function relationIds(values: unknown[] | null | undefined) {
+  return (values || []).map(relationId).filter((id): id is number => typeof id === 'number')
+}
+
 function mapContentType(value: unknown): 'reflection' | 'knowledge' | 'project-note' | 'essay' {
   if (value === 'event-reflection') return 'reflection'
   if (value === 'learning-note' || value === 'book-review') return 'knowledge'
@@ -106,6 +110,8 @@ async function saveGenerationAsDraftCore(
       author: user.id,
       aiDisclosure: true,
       aiGeneration: generation.id,
+      sourceResources: relationIds(generation.resources),
+      sourceMaterials: relationIds(generation.sourceMaterials),
       seo: { title: draft.title, description: draft.summary.slice(0, 320) },
       _status: 'draft',
     },

@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0–3 已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料，以及可搜索、可撤回的公开知识花园。下一阶段是腾讯云 COS Private Storage Adapter。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0–3、COS 私有存储与生产恢复基线已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料，以及可搜索、可撤回的公开知识花园。当前工作包是 ISSUE-014「来源材料驱动的 AI 内容工作台」。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun，后台入口为 https://blog.snorlaxden.fun/admin。
 
@@ -59,6 +59,10 @@ flowchart TB
 
   Studio --> AIModule[AI Module]
   Routes --> AIModule
+  Studio --> Sources[合法 Resource / SourceMaterial]
+  Sources --> Facts[事实包与待确认项]
+  Facts --> AIModule
+  AIModule --> Draft[Payload draft + Markdown 审阅副本]
   AIModule --> DeepSeek[DeepSeek API]
   AIModule --> StepFun[StepFun API]
 
@@ -147,7 +151,9 @@ pnpm dev:db:down
 | `PUBLIC_GARDEN_MANIFEST` | 实际白名单 manifest 的路径 | 只在执行导出的环境配置，不进入 Git |
 | `PUBLIC_GARDEN_OUTPUT_DIR` | `/garden` 唯一可读的公开副本目录 | 默认 `content/public-garden`；生产 `/app/public-garden` |
 
-AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择 DeepSeek 或 StepFun 生成结构化内容。每次调用都会写入仅管理员可见的 `ai-generations` 记录，并按管理员限制每日调用次数（`AI_DAILY_LIMIT`，默认 20）。成功结果只能由管理员点击“保存草稿”后写入 Payload 和 Markdown；系统没有自动发布路径。
+AI 密钥不会使用 `NEXT_PUBLIC_` 前缀，也不会发送到浏览器。管理员登录后可访问 `/studio`，选择具有个人笔记、本人所有或明确授权文字的 Resource/SourceMaterial，也可补充本次个人笔记。服务端会再次验证来源，且不会把 PDF/图片原始字节发送给模型。
+
+工作流先生成“已有事实、缺失信息、待人工确认内容、允许引用来源”事实包，再据此生成结构化文章草稿。`ai-generations` 保存任务状态、当前步骤、事实包、来源关系、重试次数和实际模型调用次数；第二步失败时可以沿用已成功的事实包重试，不重复消耗第一步。每日限额按真实模型调用次数计算。成功结果只能由管理员点击“保存草稿”后写入 Payload draft 和 `content/articles/<slug>.md` 审阅副本；系统没有自动发布路径。
 
 公开站通过独立的 `/assistant` 页面提供数字花园助手，访客从主导航进入后直接看到完整会话区。预设问题直接读取已启用 FAQ，不调用模型；自由问题只把匿名访问可见的站点设置、已发布文章和项目发送给 DeepSeek，并返回站内引用。访客按加盐 IP 摘要限制每日调用次数，审计只保存问题的加盐摘要、字符数、模型和调用结果，不保存完整对话。模型不可用或超限时，预设问答仍可继续使用。
 
@@ -209,7 +215,7 @@ T020 已完成：站点所有者确认备案号为 `粤ICP备2026035659号`，�
 | 私人资源、短记与来源关系 | Payload `resources` | PostgreSQL，仅管理员可见；入口 `/library` |
 | 私有来源材料、授权与文件元数据 | Payload `source-materials` | PostgreSQL，仅管理员可见；入口 `/library` |
 | 私有 PDF/图片原件 | Private Storage Adapter | 本地默认 `.private-files/`；生产腾讯云私有 COS；local 卷保留用于回滚 |
-| AI 生成记录 | Payload `ai-generations` | PostgreSQL，仅管理员可见 |
+| AI 生成任务、事实包与来源关系 | Payload `ai-generations` | PostgreSQL，仅管理员可见；状态与分步结果可恢复 |
 | 操作审计日志 | Payload `audit-logs` | PostgreSQL，管理员只读且禁止修改/删除 |
 | AI 保存的 Markdown 草稿 | 非权威审阅副本 | 本地 `content/articles/<slug>.md`；生产 `/app/content-data/articles/<slug>.md` |
 | 项目、FAQ、标签、设置 | Payload Collections/Global | PostgreSQL |

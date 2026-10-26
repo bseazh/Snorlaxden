@@ -108,6 +108,11 @@ providers / infrastructure
 - 后台创建、AI 生成或 Markdown 导入都先进入 `draft`。
 - AI 调用按管理员和 UTC 自然日计数，默认上限为 20，可用 `AI_DAILY_LIMIT` 调整；成功与失败调用都计入记录和额度。
 - AI 生成成功后不会自动写入文章。管理员必须显式点击“保存草稿”，系统才同时创建 Payload draft 和 Markdown 工作副本。
+- 来源工作流只能装配当前管理员有权使用的文字：Resource 与 SourceMaterial 都必须属于当前管理员；Resource 还须标记为用户提供文字、授权转录或本人媒体且包含个人笔记，SourceMaterial 须包含个人笔记或已授权原文。原始文件字节不得发给模型。
+- 模型输入必须以“个人笔记、来源说明、已授权原文、授权依据”分区；来源说明只用于出处背景，不能直接当作已证实事实。
+- ISSUE-014 固定使用事实包、文章草稿两步流程。事实步骤成功后立即持久化；草稿步骤失败时重试只能继续草稿步骤，不能重复消耗已成功步骤。
+- `ai-generations` 状态集合为 `queued/running/succeeded/failed/cancelled/saved_as_draft`，并保存 `currentStep`、`retryCount` 和 `modelCallCount`。每日限额按 `modelCallCount` 求和，而不是按任务条数估算。
+- 生成任务必须保留所选 Resource/SourceMaterial 关系；保存 Post 草稿时同步写入 `sourceResources` 和 `sourceMaterials`，便于人工溯源。
 - 发布条件：事实、来源、版权、隐私和 SEO 均已人工检查。
 - URL 使用稳定 `slug`；修改标题不自动修改已发布 slug。
 - 正文不保存临时签名 URL；外部来源保存 canonical URL 和来源说明。

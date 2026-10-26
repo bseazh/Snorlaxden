@@ -107,14 +107,20 @@ test.describe('Admin Panel', () => {
   })
 
   test('can generate and review a structured AI draft', async () => {
-    await page.route('**/api/internal/ai/draft', async (route) => {
+    await page.route('**/api/internal/ai/workflow', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
         json: {
           generationId: 101,
           provider: 'deepseek',
           model: 'deepseek-chat',
-          promptVersion: 'article-writer-v1',
+          promptVersion: 'source-workflow-v1',
+          factPackage: {
+            facts: [{ claim: '活动由管理员本人记录。', evidenceRefs: ['M:manual'] }],
+            missingInformation: ['活动时间'],
+            reviewItems: ['发布前确认活动时间'],
+            allowedSources: [{ ref: 'M:manual', label: '管理员本次补充', authorization: '个人笔记' }],
+          },
           draft: {
             title: '测试生成的待审核文章',
             summary: '用于验证工作台展示和事实核实流程。',
@@ -124,7 +130,7 @@ test.describe('Admin Panel', () => {
             suggestedTags: ['测试'],
             disclosure: { aiAssisted: true },
           },
-          usage: { limit: 20, used: 1, remaining: 19 },
+          usage: { limit: 20, used: 2, remaining: 18 },
         },
       })
     })
@@ -136,10 +142,11 @@ test.describe('Admin Panel', () => {
     })
 
     await page.goto('http://localhost:3000/studio')
-    await page.fill('textarea[name="sourceText"]', '这是一段超过二十个字符的测试素材，用于验证管理员写作工作台。')
+    await page.fill('textarea[name="manualText"]', '这是一段超过二十个字符的测试素材，用于验证管理员写作工作台。')
     await page.click('button[type="submit"]')
 
     await expect(page.getByRole('heading', { name: '测试生成的待审核文章' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '事实包' })).toBeVisible()
     await expect(page.getByText('活动发生在什么时候？')).toBeVisible()
     await expect(page.getByText('不会自动发布')).toBeVisible()
     await page.fill('input[pattern]', 'ai-test-draft')

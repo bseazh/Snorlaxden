@@ -52,6 +52,7 @@ export async function createResource(
     collection: 'resources',
     data: {
       capturedAt: new Date().toISOString(), ingestStatus: 'saved_only', notes: input.notes, resourceType: input.resourceType,
+      owner: user.id,
       sourceId: randomUUID(),
       sourceAccess: input.sourceUrl ? 'url_only' : 'user_supplied_text', sourceUrl: input.sourceUrl,
       title: input.title, visibility: input.visibility,

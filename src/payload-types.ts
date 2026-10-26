@@ -258,6 +258,8 @@ export interface Post {
   author?: (number | null) | User;
   aiDisclosure?: boolean | null;
   aiGeneration?: (number | null) | AiGeneration;
+  sourceResources?: (number | Resource)[] | null;
+  sourceMaterials?: (number | SourceMaterial)[] | null;
   originalUrl?: string | null;
   seo?: {
     title?: string | null;
@@ -278,9 +280,23 @@ export interface AiGeneration {
   provider: 'deepseek' | 'stepfun';
   model: string;
   promptVersion: string;
-  status: 'running' | 'succeeded' | 'failed' | 'saved_as_draft';
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled' | 'saved_as_draft';
   sourceHash: string;
   sourceText: string;
+  resources?: (number | Resource)[] | null;
+  sourceMaterials?: (number | SourceMaterial)[] | null;
+  currentStep: 'facts' | 'draft' | 'complete';
+  factPackage?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  retryCount: number;
+  modelCallCount: number;
   verifiedFacts?: string | null;
   request:
     | {
@@ -304,6 +320,36 @@ export interface AiGeneration {
   errorMessage?: string | null;
   savedPost?: (number | null) | Post;
   markdownPath?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  owner: number | User;
+  title: string;
+  resourceType: 'note' | 'video' | 'book' | 'image' | 'activity' | 'link';
+  notes?: string | null;
+  sourceDescription?: string | null;
+  sourceUrl?: string | null;
+  canonicalUrl?: string | null;
+  sourceKey?: string | null;
+  sourceId: string;
+  platform?: ('bilibili' | 'youtube' | 'wechat_channels' | 'web') | null;
+  externalId?: string | null;
+  sourceAccess: 'url_only' | 'metadata' | 'user_supplied_text' | 'authorized_transcript' | 'self_owned_media';
+  ingestStatus: 'saved_only' | 'metadata_ready' | 'text_ready' | 'card_draft' | 'reviewed' | 'failed';
+  /**
+   * 公开候选不等于已发布；ISSUE-005 不提供公开资源读取接口。
+   */
+  visibility: 'private' | 'review' | 'public';
+  tags?: (number | Tag)[] | null;
+  relatedPosts?: (number | Post)[] | null;
+  relatedProjects?: (number | Project)[] | null;
+  capturedAt: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -352,35 +398,6 @@ export interface Project {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "resources".
- */
-export interface Resource {
-  id: number;
-  title: string;
-  resourceType: 'note' | 'video' | 'book' | 'image' | 'activity' | 'link';
-  notes?: string | null;
-  sourceDescription?: string | null;
-  sourceUrl?: string | null;
-  canonicalUrl?: string | null;
-  sourceKey?: string | null;
-  sourceId: string;
-  platform?: ('bilibili' | 'youtube' | 'wechat_channels' | 'web') | null;
-  externalId?: string | null;
-  sourceAccess: 'url_only' | 'metadata' | 'user_supplied_text' | 'authorized_transcript' | 'self_owned_media';
-  ingestStatus: 'saved_only' | 'metadata_ready' | 'text_ready' | 'card_draft' | 'reviewed' | 'failed';
-  /**
-   * 公开候选不等于已发布；ISSUE-005 不提供公开资源读取接口。
-   */
-  visibility: 'private' | 'review' | 'public';
-  tags?: (number | Tag)[] | null;
-  relatedPosts?: (number | Post)[] | null;
-  relatedProjects?: (number | Project)[] | null;
-  capturedAt: string;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * 仅管理员可见。原始材料不会随关联文章或项目公开。
@@ -753,6 +770,8 @@ export interface PostsSelect<T extends boolean = true> {
   author?: T;
   aiDisclosure?: T;
   aiGeneration?: T;
+  sourceResources?: T;
+  sourceMaterials?: T;
   originalUrl?: T;
   seo?:
     | T
@@ -803,6 +822,7 @@ export interface ProjectsSelect<T extends boolean = true> {
  * via the `definition` "resources_select".
  */
 export interface ResourcesSelect<T extends boolean = true> {
+  owner?: T;
   title?: T;
   resourceType?: T;
   notes?: T;
@@ -880,6 +900,12 @@ export interface AiGenerationsSelect<T extends boolean = true> {
   status?: T;
   sourceHash?: T;
   sourceText?: T;
+  resources?: T;
+  sourceMaterials?: T;
+  currentStep?: T;
+  factPackage?: T;
+  retryCount?: T;
+  modelCallCount?: T;
   verifiedFacts?: T;
   request?: T;
   result?: T;

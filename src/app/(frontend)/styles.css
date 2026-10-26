@@ -244,6 +244,15 @@ button, input, textarea, select { font: inherit; }
 .draft-saved span { color: var(--muted); }
 .draft-saved a { color: var(--blue); font-weight: 750; }
 .ai-disclosure { margin: 32px 0 0; color: var(--muted); font-size: 12px; }
+.source-picker { display: grid; gap: 12px; margin: 0; padding: 18px; border: 1px solid var(--line); }
+.source-picker > p { margin: 0; color: var(--muted); font-size: 13px; }
+.source-option-list { display: grid; gap: 8px; max-height: 260px; overflow: auto; }
+.source-option-list label { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 10px; background: var(--paper); }
+.source-option-list span, .source-option-list small { display: block; }
+.source-option-list small { margin-top: 3px; color: var(--muted); }
+.fact-package { margin: 24px 0; padding: 18px; border: 1px solid var(--line); background: #f7f8fa; }
+.fact-package h3 { margin-top: 0; }
+.fact-package p { margin-block: 6px; }
 
 .site-footer { padding-block: 50px; color: #d9ded9; background: var(--ink); }
 .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 40px; align-items: end; }

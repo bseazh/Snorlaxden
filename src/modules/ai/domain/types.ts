@@ -16,6 +16,21 @@ export type DraftRequest = {
   verifiedFacts: string
 }
 
+export type SourceSelection = {
+  resourceIds: number[]
+  sourceMaterialIds: number[]
+  manualText: string
+}
+
+export type WorkflowRequest = Omit<DraftRequest, 'sourceText'> & SourceSelection
+
+export type FactPackage = {
+  facts: Array<{ claim: string; evidenceRefs: string[] }>
+  missingInformation: string[]
+  reviewItems: string[]
+  allowedSources: Array<{ ref: string; label: string; authorization: string }>
+}
+
 export type DraftSection = {
   id: string
   heading: string
@@ -42,8 +57,9 @@ export type GenerationResult = {
   generationId: number | string
   provider: ProviderName
   model: string
-  promptVersion: 'article-writer-v1'
+  promptVersion: 'article-writer-v1' | 'source-workflow-v1'
   draft: GeneratedDraft
+  factPackage?: FactPackage
   usage: { limit: number; used: number; remaining: number }
 }
 
@@ -56,9 +72,14 @@ export class AIError extends Error {
       | 'RATE_LIMITED'
       | 'GENERATION_NOT_FOUND'
       | 'DRAFT_ALREADY_SAVED'
+      | 'SOURCE_NOT_FOUND'
+      | 'SOURCE_NOT_AUTHORIZED'
+      | 'TASK_NOT_RETRYABLE'
       | 'GENERATION_FAILED',
     message: string,
     public readonly status: number,
+    public readonly generationId?: number | string,
+    public readonly stage?: 'facts' | 'draft',
   ) {
     super(message)
   }

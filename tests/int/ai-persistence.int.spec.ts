@@ -12,6 +12,8 @@ let userId: number | string
 let generationId: number | string
 let postId: number | string | undefined
 let articleDirectory: string
+let resourceId: number | string
+let sourceMaterialId: number | string
 
 const generatedDraft = {
   title: 'AI 生成记录测试文章',
@@ -35,6 +37,18 @@ describe('AI generation persistence', () => {
       overrideAccess: true,
     })
     userId = user.id
+    const resource = await payload.create({
+      collection: 'resources',
+      data: { capturedAt: new Date().toISOString(), ingestStatus: 'text_ready', notes: '本人测试笔记。', owner: user.id, resourceType: 'note', sourceAccess: 'user_supplied_text', sourceId: `ai-persistence-resource-${Date.now()}`, title: '草稿关系测试资源', visibility: 'private' },
+      overrideAccess: true,
+    })
+    resourceId = resource.id
+    const sourceMaterial = await payload.create({
+      collection: 'source-materials',
+      data: { author: user.id, authorizationBasis: 'owned', authorizationNote: '本人原创测试材料。', capturedAt: new Date().toISOString(), materialType: 'typed_note', personalNotes: '本人来源材料笔记。', privacy: 'private', sourceId: `ai-persistence-material-${Date.now()}`, title: '草稿关系测试材料' },
+      overrideAccess: true,
+    })
+    sourceMaterialId = sourceMaterial.id
     const generation = await payload.create({
       collection: 'ai-generations',
       data: {
@@ -42,11 +56,16 @@ describe('AI generation persistence', () => {
         provider: 'deepseek',
         model: 'deepseek-chat',
         promptVersion: 'article-writer-v1',
+        currentStep: 'complete',
+        retryCount: 0,
+        modelCallCount: 1,
         status: 'succeeded',
         sourceHash: 'test-source-hash',
         sourceText: '这是一段用于保存草稿测试的原始素材，长度足够且不会公开。',
         request: { contentType: 'learning-note', tone: 'concise', targetLength: 800 },
+        resources: [resource.id],
         result: generatedDraft,
+        sourceMaterials: [sourceMaterial.id],
       },
       overrideAccess: true,
     })
@@ -56,6 +75,8 @@ describe('AI generation persistence', () => {
   afterAll(async () => {
     if (postId) await payload.delete({ collection: 'posts', id: postId, overrideAccess: true })
     if (generationId) await payload.delete({ collection: 'ai-generations', id: generationId, overrideAccess: true })
+    if (sourceMaterialId) await payload.delete({ collection: 'source-materials', id: sourceMaterialId, overrideAccess: true })
+    if (resourceId) await payload.delete({ collection: 'resources', id: resourceId, overrideAccess: true })
     if (userId) await payload.delete({ collection: 'users', id: userId, overrideAccess: true })
     if (articleDirectory) await rm(articleDirectory, { recursive: true, force: true })
     delete process.env.CONTENT_ARTICLE_DIR
@@ -76,6 +97,8 @@ describe('AI generation persistence', () => {
     expect(post._status).toBe('draft')
     expect(post.reviewState).toBe('needs_review')
     expect(post.aiDisclosure).toBe(true)
+    expect(post.sourceResources?.map((value) => typeof value === 'object' ? value.id : value)).toContain(resourceId)
+    expect(post.sourceMaterials?.map((value) => typeof value === 'object' ? value.id : value)).toContain(sourceMaterialId)
 
     const markdown = await readFile(path.join(articleDirectory, 'ai-persistence-test-draft.md'), 'utf8')
     expect(markdown).toContain('status: draft')

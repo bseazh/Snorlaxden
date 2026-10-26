@@ -54,7 +54,7 @@ describe('private resource library', () => {
     expect(resource.sourceAccess).toBe('url_only')
     expect(resource.canonicalUrl).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
     await expect(payload.find({ collection: 'resources', overrideAccess: false })).rejects.toMatchObject({ status: 403 })
-    await expect(payload.create({ collection: 'resources', data: { capturedAt: new Date().toISOString(), ingestStatus: 'saved_only', resourceType: 'note', sourceAccess: 'user_supplied_text', sourceId: crypto.randomUUID(), title: 'Anonymous resource', visibility: 'private' }, overrideAccess: false })).rejects.toMatchObject({ status: 403 })
+    await expect(payload.create({ collection: 'resources', data: { capturedAt: new Date().toISOString(), ingestStatus: 'saved_only', owner: Number(userId), resourceType: 'note', sourceAccess: 'user_supplied_text', sourceId: crypto.randomUUID(), title: 'Anonymous resource', visibility: 'private' }, overrideAccess: false })).rejects.toMatchObject({ status: 403 })
   })
 
   it('deduplicates normalized URLs and persists explicit post/project relations', async () => {
@@ -63,7 +63,7 @@ describe('private resource library', () => {
     req = await createLocalReq({ user }, payload)
     const resource = await payload.create({
       collection: 'resources',
-      data: { capturedAt: new Date().toISOString(), ingestStatus: 'saved_only', notes: 'Only the personal note is stored here.', relatedPosts: [Number(postId)], relatedProjects: [Number(projectId)], resourceType: 'note', sourceAccess: 'user_supplied_text', sourceId: crypto.randomUUID(), title: 'Related resource', visibility: 'review' },
+      data: { capturedAt: new Date().toISOString(), ingestStatus: 'saved_only', notes: 'Only the personal note is stored here.', owner: Number(userId), relatedPosts: [Number(postId)], relatedProjects: [Number(projectId)], resourceType: 'note', sourceAccess: 'user_supplied_text', sourceId: crypto.randomUUID(), title: 'Related resource', visibility: 'review' },
       overrideAccess: false, req,
     })
     resourceIds.push(resource.id)

@@ -1,8 +1,14 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 
 import { authenticated } from '../access'
 import { auditCollectionHooks } from '../modules/audit'
 import { normalizeResourceURL, prepareResource } from '../modules/resources'
+
+const assignResourceOwner: CollectionBeforeValidateHook = ({ data, operation, req }) => {
+  if (!data) return data
+  if (operation === 'create' && !data.owner && req.user) data.owner = req.user.id
+  return data
+}
 
 export const Resources: CollectionConfig = {
   slug: 'resources',
@@ -21,9 +27,10 @@ export const Resources: CollectionConfig = {
   defaultSort: '-capturedAt',
   hooks: {
     ...auditCollectionHooks('resource'),
-    beforeValidate: [prepareResource],
+    beforeValidate: [assignResourceOwner, prepareResource],
   },
   fields: [
+    { name: 'owner', type: 'relationship', relationTo: 'users', required: true, index: true, admin: { readOnly: true }, label: '所有者' },
     { name: 'title', type: 'text', required: true, maxLength: 180 },
     {
       name: 'resourceType', type: 'select', defaultValue: 'note', required: true, index: true,
@@ -82,4 +89,3 @@ export const Resources: CollectionConfig = {
     { name: 'capturedAt', type: 'date', defaultValue: () => new Date().toISOString(), required: true, index: true },
   ],
 }
-

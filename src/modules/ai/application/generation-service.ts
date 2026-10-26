@@ -24,8 +24,9 @@ function startOfUtcDay() {
 }
 
 export async function getDailyUsage(payload: Payload, userId: number | string) {
-  const result = await payload.count({
+  const result = await payload.find({
     collection: 'ai-generations',
+    limit: 1000,
     overrideAccess: true,
     where: {
       and: [
@@ -34,8 +35,9 @@ export async function getDailyUsage(payload: Payload, userId: number | string) {
       ],
     },
   })
+  const used = result.docs.reduce((sum, item) => sum + (item.modelCallCount ?? 1), 0)
   const limit = dailyLimit()
-  return { limit, used: result.totalDocs, remaining: Math.max(0, limit - result.totalDocs) }
+  return { limit, used, remaining: Math.max(0, limit - used) }
 }
 
 export async function generateAndRecordArticleDraft(
@@ -64,6 +66,9 @@ export async function generateAndRecordArticleDraft(
       provider: input.provider,
       model: config.model,
       promptVersion,
+      currentStep: 'draft',
+      retryCount: 0,
+      modelCallCount: 1,
       status: 'running',
       sourceHash,
       sourceText: input.sourceText,

@@ -3,6 +3,8 @@ import * as migration_20261024_124523_ai_generation_records from './20261024_124
 import * as migration_20261024_134849_audit_logs from './20261024_134849_audit_logs';
 import * as migration_20261025_041929_issue005_resources from './20261025_041929_issue005_resources';
 import * as migration_20261025_064749_issue006_source_materials from './20261025_064749_issue006_source_materials';
+import * as migration_20261026_054250_issue014_source_workflow from './20261026_054250_issue014_source_workflow';
+import * as migration_20261026_055301_issue014_resource_owner from './20261026_055301_issue014_resource_owner';
 
 export const migrations = [
   {
@@ -28,6 +30,16 @@ export const migrations = [
   {
     up: migration_20261025_064749_issue006_source_materials.up,
     down: migration_20261025_064749_issue006_source_materials.down,
-    name: '20261025_064749_issue006_source_materials'
+    name: '20261025_064749_issue006_source_materials',
+  },
+  {
+    up: migration_20261026_054250_issue014_source_workflow.up,
+    down: migration_20261026_054250_issue014_source_workflow.down,
+    name: '20261026_054250_issue014_source_workflow',
+  },
+  {
+    up: migration_20261026_055301_issue014_resource_owner.up,
+    down: migration_20261026_055301_issue014_resource_owner.down,
+    name: '20261026_055301_issue014_resource_owner'
   },
 ];

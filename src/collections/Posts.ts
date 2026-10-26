@@ -54,6 +54,8 @@ export const Posts: CollectionConfig = {
     { name: 'author', type: 'relationship', relationTo: 'users' },
     { name: 'aiDisclosure', type: 'checkbox', defaultValue: false },
     { name: 'aiGeneration', type: 'relationship', relationTo: 'ai-generations' },
+    { name: 'sourceResources', type: 'relationship', hasMany: true, relationTo: 'resources' },
+    { name: 'sourceMaterials', type: 'relationship', hasMany: true, relationTo: 'source-materials' },
     { name: 'originalUrl', type: 'text' },
     seoFields,
   ],

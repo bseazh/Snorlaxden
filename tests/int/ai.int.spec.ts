@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { AIError } from '@/modules/ai'
-import { parseGeneratedDraft, validateDraftRequest } from '@/modules/ai/domain/validation'
+import { parseFactPackage, parseGeneratedDraft, validateDraftRequest, validateWorkflowRequest } from '@/modules/ai/domain/validation'
 
 describe('AI draft validation', () => {
   it('accepts a bounded administrator draft request', () => {
@@ -35,5 +35,23 @@ describe('AI draft validation', () => {
     expect(draft.disclosure.aiAssisted).toBe(true)
     expect(draft.sections[0]).not.toHaveProperty('ignored')
     expect(draft).not.toHaveProperty('ignored')
+  })
+
+  it('requires a selected source or manual note and normalizes relation IDs', () => {
+    expect(() => validateWorkflowRequest({ provider: 'deepseek', contentType: 'learning-note', tone: 'concise', targetLength: 800, manualText: '', resourceIds: [], sourceMaterialIds: [], verifiedFacts: '' })).toThrowError(/至少选择/)
+    const input = validateWorkflowRequest({ provider: 'deepseek', contentType: 'learning-note', tone: 'concise', targetLength: 800, manualText: '', resourceIds: ['12'], sourceMaterialIds: [4], verifiedFacts: '' })
+    expect(input.resourceIds).toEqual([12])
+    expect(input.sourceMaterialIds).toEqual([4])
+  })
+
+  it('parses a bounded fact package with explicit evidence references', () => {
+    const facts = parseFactPackage(JSON.stringify({
+      facts: [{ claim: '活动由本人组织。', evidenceRefs: ['R:12'] }],
+      missingInformation: ['活动日期'], reviewItems: ['确认参与人数'],
+      allowedSources: [{ ref: 'R:12', label: '活动笔记', authorization: 'user_supplied_text' }],
+      ignored: 'not exposed',
+    }))
+    expect(facts.facts[0].evidenceRefs).toEqual(['R:12'])
+    expect(facts).not.toHaveProperty('ignored')
   })
 })
