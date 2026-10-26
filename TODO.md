@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-26
-> 当前里程碑：ISSUE-014 来源材料驱动的 AI 内容工作台
+> 当前里程碑：ISSUE-014 已完成｜下一工作包待确认
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -189,7 +189,7 @@
 
 完成标准：T018 隔离恢复演练与 T020 域名、HTTPS、证书和 ICP 公示均通过；外部告警和第二故障域按所有者决定不阻塞关闭。
 
-### 进行中｜[ISSUE-014：来源材料驱动的 AI 内容工作台](https://github.com/bseazh/Snorlaxden/issues/14)（P0）
+### 已完成｜[ISSUE-014：来源材料驱动的 AI 内容工作台](https://github.com/bseazh/Snorlaxden/issues/14)（P0）
 
 - [x] `/studio` 可选择合法 Resource、本人 SourceMaterial，或补充个人笔记
 - [x] Resource/SourceMaterial 记录所有者，服务端只允许选择当前管理员拥有的合法文字；原始 PDF/图片字节不进入模型
@@ -201,7 +201,7 @@
 - [x] 按真实模型调用次数执行管理员每日限额，并记录排队、分步成功、重试、失败、完成和草稿保存审计
 - [x] 匿名工作流和重试 API 返回 401；私有输入不进入公开助手或公开花园
 - [x] 完成 T013、T014、T016 的自动化回归；AI 不可用时 Payload 手工编辑与发布链路不受影响
-- [ ] 推送固定 commit、生产备份、数据库迁移、部署和真实 DeepSeek 验收
+- [x] 推送固定 commit、生产备份、数据库迁移、部署和真实 DeepSeek 验收
 
 完成标准：管理员能从合法私有文字形成可编辑草稿，失败可从未完成步骤恢复；AI 永远不能自动发布，私有来源不进入任何匿名读取链路。
 

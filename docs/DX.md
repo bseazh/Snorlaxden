@@ -272,6 +272,8 @@ pnpm build
 
 涉及公开页面、认证、编辑器或发布流程时再执行 `pnpm test:e2e`。涉及 Provider 时使用 Mock 做稳定 E2E，再单独做一次真实供应商 smoke test，真实调用不得进入 CI。
 
+生产 AI smoke 使用 `src/scripts/issue014-production-smoke.ts`：只创建带唯一标识的临时 Resource、AI generation 和 Payload draft，验证事实包、调用次数、draft 状态和来源关系后在 `finally` 清理正文数据及 Markdown；审计事件保留。不得把此脚本改成自动发布或打印私有正文。
+
 每个提交只处理一个可描述的工作包。禁止提交 `.env`、数据库、上传媒体、私人 Markdown、Playwright 报告或构建产物。
 
 ## 8. 发布标准
