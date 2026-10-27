@@ -145,6 +145,8 @@ providers / infrastructure
 - UTF-8、LF 换行、文件名使用小写英文 slug。
 - AI 草稿统一存放为 `content/articles/<slug>.md`；生产容器映射到持久卷 `/app/content-data/articles/<slug>.md`。
 - `content/articles/` 不承担发布控制。公开读取只认 Payload `posts` 中 `_status=published` 的记录。
+- `content/articles/curated/` 是可以进入 Git 的人工策划正式源稿；必须经过显式导入脚本、发布门禁和审计，不能被 AI 工作台自动发布。
+- 发布文章必须具有公开 Media 封面、alt、授权说明、SEO 标题/描述/图片。AI 封面还必须具有生成记录、Provider、模型和 Prompt 版本；草稿阶段不强制这些字段。
 - Front Matter 参考 `content/templates/article.md`。
 - 不允许内嵌 base64 图片、脚本、iframe 或本机绝对路径。
 - 附件使用逻辑引用，导入时由 Media/Storage 服务生成稳定 ID。
@@ -282,6 +284,8 @@ Bucket 名和 Region 可进入模板；真实凭证只进入本机/服务器 `.e
 5. 写明回滚方案和数据兼容范围。
 6. 生产先备份，再由 `migrate` 容器执行；Web 只在迁移成功后启动。
 
+历史回滚只允许在一次性隔离 PostgreSQL 中验证：运行 `pnpm test:migrations` 完成全部 migration 的 `up → down → up`，脚本结束后自动销毁容器。严禁在生产数据库执行历史 down。
+
 seed 必须可重复执行，不覆盖后台已经编辑的正式内容。
 
 ## 7. 测试与提交标准
@@ -292,10 +296,13 @@ seed 必须可重复执行，不覆盖后台已经编辑的正式内容。
 pnpm typecheck
 pnpm lint
 pnpm test:int
+pnpm test:migrations
 pnpm build
 ```
 
 涉及公开页面、认证、编辑器或发布流程时再执行 `pnpm test:e2e`。涉及 Provider 时使用 Mock 做稳定 E2E，再单独做一次真实供应商 smoke test，真实调用不得进入 CI。
+
+视觉改动使用 Impeccable 的 audit/adapt/polish 原则，但保留项目既有视觉身份；其 vendored scripts 不进入 ESLint 扫描。Playwright 视觉基线固定为 1440×1000 与 390×844，覆盖首页、文章、项目、AI 助手、管理登录边界及展开的手机菜单。CI 中图片加载失败、横向滚动、页面脚本错误或超过容差的像素漂移均失败。
 
 生产 AI smoke 使用 `src/scripts/issue014-production-smoke.ts`：只创建带唯一标识的临时 Resource、AI generation 和 Payload draft，验证事实包、调用次数、draft 状态和来源关系后在 `finally` 清理正文数据及 Markdown；审计事件保留。不得把此脚本改成自动发布或打印私有正文。
 

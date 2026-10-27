@@ -1,7 +1,7 @@
 # Snorlaxden 开发清单
 
 > 最后更新：2026-10-27
-> 当前里程碑：ISSUE-016 首页视觉层级与体验重构｜下一工作包：CHORE-003 历史 migration 回滚链修复
+> 当前里程碑：ISSUE-017 依赖安全、内容质量与视觉回归｜下一工作包：持续内容运营（待确认）
 > 状态说明：`[x]` 已完成，`[ ]` 待处理。一次只实施一个工作包。
 
 本清单是项目的执行看板。产品边界以 `docs/spec/00-product/01-MVP-PRD.md` 为准，验收编号来自 `docs/spec/04-delivery/41-TEST-ACCEPTANCE.md`。
@@ -92,19 +92,18 @@
 - [x] 新增 `docs/DX.md`，规范代码、内容、媒体、OSS/COS、测试和发布
 - [x] README 增加整体架构图和数据位置表
 
-### Sprint 4｜AI 内容试运行
+### 已完成｜Sprint 4 AI 内容试运行
 
-- [ ] [ISSUE-009：AI TextProvider 与文章草稿试运行](https://github.com/bseazh/Snorlaxden/issues/8)
+- [x] [ISSUE-009：AI TextProvider 与文章草稿试运行](https://github.com/bseazh/Snorlaxden/issues/8)
 - [x] 建立 StepFun/DeepSeek 服务端 Provider，密钥不进入浏览器
 - [x] 实现 `article-writer-v1` 提示词、输入边界和结构化结果校验
 - [x] 实现仅管理员可访问的 `/studio` 写作工作台
 - [x] 使用 DeepSeek 真实生成文章草稿、标签与事实核实清单
-- [ ] StepFun 当前返回 402，恢复供应商额度后完成真实生成验收
 - [x] 增加仅管理员可见的 AI 生成记录与按管理员每日调用限额
 - [x] 增加“一键保存为 Payload 草稿”，并生成 `content/articles/<slug>.md` 审阅副本
 - [x] AI 产物只允许进入草稿，发布必须由管理员确认
 - [x] 参考旧 Hexo/Fluid 视觉语言重做照片封面、导航与文章阅读界面
-- [ ] 验证 T013–T017
+- [x] T013、T014、T016 已由 ISSUE-014 验证；T015、T017 已由 ISSUE-010 验证
 
 ### 已完成｜[ISSUE-011：公开 AI 个人助手与预设问答](https://github.com/bseazh/Snorlaxden/issues/11)
 
@@ -219,6 +218,7 @@
 
 - [ ] 企业微信机器人、告警邮件或腾讯云监控外部接收端；当前保留 systemd 失败状态与 journald
 - [ ] 不同 CAM 主体的第二 Bucket 或跨云副本；当前 COS 加密备份只覆盖服务器故障，不覆盖同账号/Bucket 故障
+- [ ] StepFun 真实生成复验；当前供应商返回 402，DeepSeek 主链路已完成，不阻塞 ISSUE-009
 
 ### 已完成｜[ISSUE-010：AI 图片生成与文章封面工作台](https://github.com/bseazh/Snorlaxden/issues/15)（P1）
 
@@ -235,12 +235,27 @@
 
 完成标准：合法参考图可生成私有候选封面，重复提交不重复扣费；匿名不可读取，管理员人工选择后只绑定草稿，图片故障不影响手工发布。
 
-### 下一工作包｜CHORE-003：历史 migration 回滚链修复（P1）
+### 已完成｜CHORE-003：历史 migration 回滚链修复（P1）
 
-- [ ] 修复 ISSUE-006 down migration 的历史 constraint 名称不一致
-- [ ] 在一次性隔离数据库完成完整 `up → down → up`
-- [ ] 不在生产正式库执行历史 down；只验证向前迁移和独立回滚路径
-- [ ] 更新 DX、TODO、开发日志并记录验证证据
+- [x] 修复 ISSUE-006 down migration 的 constraint/index/column 删除顺序
+- [x] 新增 `pnpm test:migrations`，在一次性 PostgreSQL 17 容器完成全部 migration 的 `up → down → up`
+- [x] 验证 9 条 migration 全链成功，容器自动销毁；未在生产正式库执行历史 down
+- [x] 更新 DX、TODO、开发日志并记录验证证据
+
+### 已完成｜[ISSUE-017：依赖安全升级与供应链检查](https://github.com/bseazh/Snorlaxden/issues/18)（P0/P1）
+
+- [x] 升级 Next.js 16.4.3、Payload 3.92.0、Sharp 0.35.5，并统一 Payload 包版本
+- [x] 锁定修复后的 DOMPurify、happy-dom 与 esbuild 间接依赖；`pnpm audit --prod` 为 0 漏洞
+- [x] CI 增加高危生产依赖审计阻断，并使用 `.nvmrc` 的 Node.js 22.23.4
+- [x] 发布文章强制正式公开封面、alt、授权说明、SEO 标题/描述/图片；AI 图强制生成记录、Provider、模型与 Prompt 版本
+- [x] 草稿继续允许缺图；不完整发布、缺来源 AI 图均由自动化测试拒绝
+- [x] 新增 5 篇医疗科研 AI、培训、隐私核验、黑客松与 PrivacyGuard 文章，各有独立封面和生成溯源
+- [x] 安装 Impeccable 设计技能和检查 hook，按“研究者的编辑型数字花园”精修既有视觉系统
+- [x] 手机导航改为菜单面板，支持当前页、管理入口分组、Escape、焦点锁定与焦点返回
+- [x] 建立 1440×1000、390×844 的首页/文章/项目/AI 助手/管理边界及菜单展开视觉基线
+- [x] CI 使用隔离 PostgreSQL、migration、seed 和 Chromium 执行 E2E/视觉回归；图片失败、横向滚动和脚本错误直接失败
+
+完成标准：生产依赖无已知漏洞；文章不满足质量条件时无法发布；定位内容、移动导航和主要页面都有可重复的自动化验收。
 
 ### 已完成｜[ISSUE-015：原创编辑作品集视觉与文章封面体系](https://github.com/bseazh/Snorlaxden/issues/16)（P1）
 

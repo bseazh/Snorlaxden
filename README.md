@@ -2,7 +2,7 @@
 
 Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与项目、可控公开的 Obsidian 知识花园、私人资源库，以及后续可选的 AI 创作辅助。
 
-**Sprint 0–3、COS 私有存储、生产恢复基线、ISSUE-010/014 AI 内容生产链路与 ISSUE-015 视觉改版均已完成**。项目已经具备管理员访问控制、内容模型、草稿/发布/撤回、图片优先的响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料、可搜索且可撤回的公开知识花园，以及文字草稿和文章封面工作台。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
+**Sprint 0–4、COS 私有存储、生产恢复基线、AI 内容生产链路、依赖安全升级与视觉回归均已完成**。项目已经具备管理员访问控制、内容模型、带质量门禁的草稿/发布/撤回、图片优先的响应式公开站、AI 助手、默认私有的第二知识仓库、受保护的私有材料、可搜索且可撤回的公开知识花园，以及文字草稿和文章封面工作台。执行状态、依赖与验收项统一记录在 [TODO.md](TODO.md)。
 
 生产站运行在 https://blog.snorlaxden.fun。公开站顶部和页脚提供“管理入口”，未登录时先进入 Payload 登录，登录后进入统一的 `/manage` 创作与管理中心；也可以直接访问 https://blog.snorlaxden.fun/admin。
 
@@ -10,14 +10,15 @@ Snorlaxden 是何海钊的个人数字空间：公开个人品牌站、文章与
 
 - Node.js `22.23.4`（本机最低兼容 `20.18.1`）
 - pnpm `10.x`
-- Next.js `16.3.3`
-- Payload CMS `3.91.0`
+- Next.js `16.4.3`
+- Payload CMS `3.92.0`
+- Sharp `0.35.5`
 - PostgreSQL `17`
 - Docker Compose
 - Quartz 5：Sprint 3 借鉴其公开知识花园能力，不直接读取私人 Obsidian Vault
 - Memos：仅借鉴时间线、标签、可见性和快速记录交互，不额外部署其 Go 服务
 
-依赖使用精确版本和 lockfile。Payload `3.92.0` 已提高 Node 最低版本，本项目暂时锁定 `3.91.0`，升级前必须重新执行完整检查。
+依赖使用精确版本和 lockfile。Payload `3.92.0` 要求 Node.js `^22.23.4 || >=24.22.1`，本项目与生产统一使用 `.nvmrc` 中的 `22.23.4`。CI 执行 `pnpm audit:prod`，High/Critical 漏洞会阻断。
 
 ## 整体架构
 
@@ -93,7 +94,11 @@ flowchart TB
 
 ISSUE-016 进一步使用 `ai-design-skills-main` 的启发式评估与质量量表收紧首页：个人介绍采用编辑式信息结构，项目画廊具有错位节奏，三条工作线使用深色无卡片栏目，文章与 FAQ 回归清晰阅读层级。该 Skill 是 AI 产品体验方法库而不是视觉模板；项目只采用其可用性、任务成功、适度动效和质量评估方法。
 
-文章封面唯一正式来源为 Payload `posts.cover`。首页文章卡、`/journal` 和文章详情会优先使用已发布 Media；历史文章缺图时使用 `public/images/article-covers/` 的原创主题配图，并显示“主题配图”标记。管理员可在 Payload 或 `/studio/images` 人工选择正式封面；AI 不会自动绑定图片或发布文章。
+文章封面唯一正式来源为 Payload `posts.cover`。正式发布要求公开 Media 封面具备 alt 与授权说明，SEO 标题、描述和图片齐全；AI 图片还必须保留生成记录、Provider、模型与 Prompt 版本。草稿可暂时缺图。管理员可在 Payload 或 `/studio/images` 人工选择正式封面；AI 不会自动绑定图片或发布文章。
+
+定位内容的人工策划源稿位于 `content/articles/curated/`，五篇文章分别覆盖医学文献解析、医务科研 AI 培训、隐私与事实核验、黑客松组织复盘和 PrivacyGuard 案例。每篇使用独立 WebP 封面，导入时写入 Media、AI 图片生成记录、来源材料、校验和与审计；只有显式执行 `pnpm content:positioning:publish` 才会发布。
+
+项目安装 Impeccable 4.8.0 作为设计检查技能，并将现有视觉方向明确为“研究者的编辑型数字花园”：首页以作品与真实材料为中心，文章重视长文阅读，后台保持安静高效。手机端使用可访问菜单面板，不再横向滚动导航。
 
 ## 本地运行
 
@@ -274,10 +279,12 @@ ISSUE-007 使用三重公开条件：来源路径必须进入显式 manifest、�
 pnpm typecheck
 pnpm lint
 pnpm test:int
+pnpm test:migrations
+pnpm test:e2e
 pnpm build
 ```
 
-端到端测试需要先启动数据库和应用，并安装 Playwright 浏览器。GitHub Actions 当前执行依赖安装、类型检查和 lint；数据库集成测试会在后续 CI 工作包中加入隔离的 PostgreSQL service。
+端到端测试需要数据库与 Playwright Chromium。GitHub Actions 的 checks job 执行依赖审计、类型检查和 lint；visual-regression job 使用隔离 PostgreSQL 17，依次运行 migration、seed、定位内容导入和 E2E。截图固定覆盖 1440×1000 与 390×844，并检查图片加载、横向溢出和页面脚本错误。
 
 ## 目录
 
@@ -290,7 +297,7 @@ src/modules/public-garden/  白名单校验、链接净化、原子公开导出�
 src/collections/             Payload Collection Schema
 src/migrations/              PostgreSQL 迁移
 content/                     受控导入、导出与公开花园工作区
-content/articles/            AI 保存的 Markdown 草稿工作副本
+content/articles/            AI 草稿工作副本与 curated 人工策划源稿
 logs/                        日志统一入口、开发日志与受控运行日志导出
 tests/                       集成测试与端到端测试
 docs/DX.md                   开发、内容、媒体和对象存储标准
