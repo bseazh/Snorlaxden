@@ -95,10 +95,30 @@ test.describe('Public digital garden', () => {
       scrollWidth: document.documentElement.scrollWidth,
     }))
     expect(dimensions.scrollWidth).toBe(dimensions.clientWidth)
-    await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '打开主菜单' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: '主导航' })).not.toBeVisible()
     const assistantBox = await page.getByRole('region', { name: '何海钊 AI 助手' }).boundingBox()
     expect(assistantBox?.x).toBeGreaterThanOrEqual(0)
     expect(assistantBox?.width).toBeLessThanOrEqual(390)
+  })
+
+  test('mobile menu exposes every route, traps focus, marks the current page, and closes with Escape', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('http://localhost:3000/assistant')
+    const toggle = page.getByRole('button', { name: '打开主菜单' })
+    await toggle.click()
+    const navigation = page.getByRole('navigation', { name: '主导航' })
+    await expect(navigation.getByRole('link', { name: '关于' })).toBeVisible()
+    await expect(navigation.getByRole('link', { name: '管理入口' })).toBeVisible()
+    await expect(navigation.getByRole('link', { name: /AI 助手/ })).toHaveAttribute('aria-current', 'page')
+    await expect(navigation.getByRole('link', { name: '关于' })).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+    await expect(navigation.getByRole('link', { name: '管理入口' })).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(navigation.getByRole('link', { name: '关于' })).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: '打开主菜单' })).toBeFocused()
+    await expect(navigation.getByRole('link', { name: '关于' })).not.toBeVisible()
   })
 
   test('garden has no horizontal overflow on mobile', async ({ page }) => {

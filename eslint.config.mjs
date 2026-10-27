@@ -24,7 +24,7 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores(['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts']),
+  globalIgnores(['.next/', '.github/skills/impeccable/scripts/', 'src/payload-types.ts', 'src/payload-generated-schema.ts']),
 ])
 
 export default eslintConfig
