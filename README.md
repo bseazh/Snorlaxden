@@ -284,7 +284,7 @@ pnpm test:e2e
 pnpm build
 ```
 
-端到端测试需要数据库与 Playwright Chromium。GitHub Actions 的 checks job 执行依赖审计、类型检查和 lint；visual-regression job 使用隔离 PostgreSQL 17，依次运行 migration、seed、定位内容导入和 E2E。截图固定覆盖 1440×1000 与 390×844，并检查图片加载、横向溢出和页面脚本错误。
+端到端测试需要数据库与 Playwright Chromium。GitHub Actions 的 checks job 执行依赖审计、类型检查和 lint；visual-regression job 使用隔离 PostgreSQL 17，依次运行 migration、seed、定位内容导入和无写入的视觉规格。截图固定覆盖 1440×1000 与 390×844，并检查图片加载、横向溢出和页面脚本错误。
 
 ## 目录
 

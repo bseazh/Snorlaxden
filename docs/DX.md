@@ -302,7 +302,7 @@ pnpm build
 
 涉及公开页面、认证、编辑器或发布流程时再执行 `pnpm test:e2e`。涉及 Provider 时使用 Mock 做稳定 E2E，再单独做一次真实供应商 smoke test，真实调用不得进入 CI。
 
-视觉改动使用 Impeccable 的 audit/adapt/polish 原则，但保留项目既有视觉身份；其 vendored scripts 不进入 ESLint 扫描。Playwright 视觉基线固定为 1440×1000 与 390×844，覆盖首页、文章、项目、AI 助手、管理登录边界及展开的手机菜单。CI 中图片加载失败、横向滚动、页面脚本错误或超过容差的像素漂移均失败。
+视觉改动使用 Impeccable 的 audit/adapt/polish 原则，但保留项目既有视觉身份；其 vendored scripts 不进入 ESLint 扫描。Playwright 视觉基线固定为 1440×1000 与 390×844，覆盖首页、文章、项目、AI 助手、管理登录边界及展开的手机菜单。CI 使用隔离数据库只执行无写入的视觉规格，避免与上传、撤回等有状态 E2E 相互污染；图片加载失败、横向滚动、页面脚本错误或超过跨平台容差的像素漂移均失败。
 
 生产 AI smoke 使用 `src/scripts/issue014-production-smoke.ts`：只创建带唯一标识的临时 Resource、AI generation 和 Payload draft，验证事实包、调用次数、draft 状态和来源关系后在 `finally` 清理正文数据及 Markdown；审计事件保留。不得把此脚本改成自动发布或打印私有正文。
 

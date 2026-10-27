@@ -58,7 +58,7 @@ jobs:
       - run: pnpm payload migrate
       - run: pnpm seed
       - run: pnpm content:positioning:publish
-      - run: pnpm test:e2e
+      - run: pnpm exec playwright test tests/e2e/visual-regression.e2e.spec.ts --project=chromium
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

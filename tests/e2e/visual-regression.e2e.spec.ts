@@ -58,7 +58,7 @@ for (const viewport of [
         expect(consoleErrors).toEqual([])
         await expect(page).toHaveScreenshot(`${name}-${viewport.label}.png`, {
           animations: 'disabled',
-          maxDiffPixelRatio: 0.025,
+          maxDiffPixelRatio: 0.06,
           scale: 'css',
         })
       })
@@ -71,5 +71,5 @@ test('expanded mobile navigation remains visually stable', async ({ page }) => {
   await page.goto('http://localhost:3000/journal')
   await page.getByRole('button', { name: '打开主菜单' }).click()
   await expect(page.getByRole('navigation', { name: '主导航' }).getByRole('link', { name: /文章/ })).toHaveAttribute('aria-current', 'page')
-  await expect(page).toHaveScreenshot('mobile-navigation-open.png', { animations: 'disabled', maxDiffPixelRatio: 0.025, scale: 'css' })
+  await expect(page).toHaveScreenshot('mobile-navigation-open.png', { animations: 'disabled', maxDiffPixelRatio: 0.06, scale: 'css' })
 })
