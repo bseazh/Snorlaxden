@@ -6,6 +6,7 @@ import * as migration_20261025_064749_issue006_source_materials from './20261025
 import * as migration_20261026_054250_issue014_source_workflow from './20261026_054250_issue014_source_workflow';
 import * as migration_20261026_055301_issue014_resource_owner from './20261026_055301_issue014_resource_owner';
 import * as migration_20261026_072026_issue010_ai_image_workbench from './20261026_072026_issue010_ai_image_workbench';
+import * as migration_20261027_111500_issue017_image_provider from './20261027_111500_issue017_image_provider';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20261026_072026_issue010_ai_image_workbench.up,
     down: migration_20261026_072026_issue010_ai_image_workbench.down,
     name: '20261026_072026_issue010_ai_image_workbench'
+  },
+  {
+    up: migration_20261027_111500_issue017_image_provider.up,
+    down: migration_20261027_111500_issue017_image_provider.down,
+    name: '20261027_111500_issue017_image_provider',
   },
 ];

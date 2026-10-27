@@ -1,3 +1,5 @@
 *.md
 !.gitignore
 !README.md
+!curated/
+!curated/*.md

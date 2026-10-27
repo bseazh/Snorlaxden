@@ -232,7 +232,7 @@ export interface AiImageGeneration {
   creator: number | User;
   post: number | Post;
   referenceMaterial: number | SourceMaterial;
-  provider: 'sophnet';
+  provider: 'sophnet' | 'qmg2s';
   model: string;
   promptVersion: string;
   status: 'queued' | 'running' | 'partially_succeeded' | 'succeeded' | 'failed' | 'cancelled' | 'selected';

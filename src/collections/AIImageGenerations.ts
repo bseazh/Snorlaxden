@@ -22,7 +22,13 @@ export const AIImageGenerations: CollectionConfig = {
     { name: 'creator', type: 'relationship', relationTo: 'users', required: true, index: true },
     { name: 'post', type: 'relationship', relationTo: 'posts', required: true, index: true },
     { name: 'referenceMaterial', type: 'relationship', relationTo: 'source-materials', required: true, index: true },
-    { name: 'provider', type: 'select', options: [{ label: 'SophNet', value: 'sophnet' }], required: true },
+    {
+      name: 'provider', type: 'select', required: true,
+      options: [
+        { label: 'SophNet', value: 'sophnet' },
+        { label: 'QMG2S', value: 'qmg2s' },
+      ],
+    },
     { name: 'model', type: 'text', required: true },
     { name: 'promptVersion', type: 'text', required: true },
     {

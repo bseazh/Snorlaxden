@@ -15,6 +15,7 @@
     "logs:export": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/export-audit-logs.ts",
     "site:icp:set": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/set-icp-number.ts",
     "character-reference:import": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/import-character-reference.ts",
+    "content:positioning:publish": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/publish-positioning-articles.ts",
     "issue010:smoke": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/issue010-production-smoke.ts",
     "storage:cos:smoke": "cross-env NODE_OPTIONS=--no-deprecation node --import=tsx/esm src/scripts/cos-storage-smoke.ts",
     "standalone:sanitize": "node src/scripts/sanitize-standalone.mjs",

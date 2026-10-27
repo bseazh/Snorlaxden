@@ -1,0 +1,37 @@
+{
+  "llm-medical-literature-review": {
+    "file": "medical-literature-ai.webp",
+    "provider": "qmg2s",
+    "model": "Image 2.5 Sunburst",
+    "promptVersion": "positioning-cover-v1",
+    "prompt": "Original premium editorial paper-cut and soft-clay landscape cover about large language models assisting medical literature review, with layered research papers, highlighted evidence fragments, citation threads and a calm knowledge map; warm off-white desk, peach, dusty blue and sage; no readable text, logo, watermark, people or fake charts."
+  },
+  "medical-ai-training-method": {
+    "file": "medical-ai-training.webp",
+    "provider": "qmg2s",
+    "model": "Image 2.5 Sunburst",
+    "promptVersion": "positioning-cover-v1",
+    "prompt": "Original premium editorial paper-cut and soft-clay landscape cover about practical AI training for medical researchers, with notebooks, prompt cards, data blocks, checkpoints and a path from demonstration to independent work; warm cream, coral, yellow, teal and lavender; no readable text, logo, watermark or stock-photo classroom."
+  },
+  "medical-text-privacy-fact-check": {
+    "file": "medical-text-privacy-verification.webp",
+    "provider": "qmg2s",
+    "model": "Image 2.5 Sunburst",
+    "promptVersion": "positioning-cover-v1",
+    "prompt": "Original premium editorial paper-cut and acrylic landscape cover about privacy and factual verification in medical research text processing, with document fragments passing through a privacy screen and evidence checkpoint into verified cards; blush, coral, plum and sage; no readable text, logo, watermark, people, patient data or fake UI."
+  },
+  "hackathon-operations-retrospective": {
+    "file": "hackathon-operations.webp",
+    "provider": "qmg2s",
+    "model": "Image 2.5 Sunburst",
+    "promptVersion": "positioning-cover-v1",
+    "prompt": "Original playful premium editorial paper-cut and soft-clay landscape cover about organizing more than thirty hackathons, with prototype blocks, notes, cables and branching paths converging into an organized iteration loop; apricot, coral, lavender, teal and yellow; no readable text, logo, watermark, people, trophies or confetti overload."
+  },
+  "privacyguard-case-study": {
+    "file": "privacyguard-case-study.webp",
+    "provider": "qmg2s",
+    "model": "Image 2.5 Sunburst",
+    "promptVersion": "positioning-cover-v1",
+    "prompt": "Original premium editorial paper-cut, soft-clay and translucent acrylic landscape cover for a local-first Chinese document privacy workflow, with documents entering field review, consistent abstract aliases and a human approval checkpoint; navy, peach, burgundy and cream; no readable text, logo, watermark, padlock or identifiable documents."
+  }
+}

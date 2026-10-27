@@ -1,4 +1,5 @@
 import { getPayload } from 'payload'
+import path from 'node:path'
 
 import type { Post } from '../payload-types'
 import config from '../payload.config'
@@ -49,6 +50,16 @@ function richText(source: string): RichText {
 }
 
 const payload = await getPayload({ config })
+
+if (process.env.SEED_ADMIN_EMAIL && process.env.SEED_ADMIN_PASSWORD) {
+  const administrators = await payload.find({ collection: 'users', limit: 1, overrideAccess: true, where: { email: { equals: process.env.SEED_ADMIN_EMAIL } } })
+  if (!administrators.totalDocs) {
+    await payload.create({
+      collection: 'users', overrideAccess: true,
+      data: { email: process.env.SEED_ADMIN_EMAIL, name: 'Seed Administrator', password: process.env.SEED_ADMIN_PASSWORD, role: 'admin' },
+    })
+  }
+}
 
 const existing = await payload.find({
   collection: 'posts',
@@ -232,6 +243,16 @@ GitHub Pages 适合静态产物托管；源码仓库和 Pages 产物仓库分离
   },
 ]
 
+const editorialCover = await payload.create({
+  collection: 'media', overrideAccess: true,
+  data: {
+    alt: '层叠纸张与知识节点构成的编辑型文章封面',
+    licenseNote: 'Snorlaxden 项目自有插画，用于初始文章内容展示。',
+    purpose: 'thumbnail', visibility: 'public',
+  },
+  filePath: path.resolve('public/images/article-covers/default-editorial.webp'),
+})
+
 for (const [index, post] of posts.entries()) {
   await payload.create({
     collection: 'posts',
@@ -239,11 +260,12 @@ for (const [index, post] of posts.entries()) {
       ...post,
       content: richText(post.content),
       contentType: index < 2 ? 'knowledge' : 'essay',
+      cover: editorialCover.id,
       tags: [tagIDs['content-engineering']],
       isFeatured: index === 0,
       reviewState: 'approved',
       aiDisclosure: false,
-      seo: { title: `${post.title}｜何海钊`, description: post.summary },
+      seo: { title: `${post.title}｜何海钊`, description: post.summary, image: editorialCover.id },
       _status: 'published',
     },
     draft: false,
