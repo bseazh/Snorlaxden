@@ -71,14 +71,13 @@ export async function up({ db, payload: _payload, req: _req }: MigrateUpArgs): P
 
 export async function down({ db, payload: _payload, req: _req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "source_materials" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "source_materials_rels" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "source_materials" CASCADE;
-  DROP TABLE "source_materials_rels" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_source_materials_fk";
-  
   DROP INDEX "payload_locked_documents_rels_source_materials_id_idx";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "source_materials_id";
+  ALTER TABLE "source_materials" DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE "source_materials_rels" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "source_materials_rels" CASCADE;
+  DROP TABLE "source_materials" CASCADE;
   DROP TYPE "public"."enum_source_materials_material_type";
   DROP TYPE "public"."enum_source_materials_authorization_basis";
   DROP TYPE "public"."enum_source_materials_privacy";

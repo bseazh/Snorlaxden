@@ -19,6 +19,7 @@
     "storage:cos:smoke": "cross-env NODE_OPTIONS=--no-deprecation node --import=tsx/esm src/scripts/cos-storage-smoke.ts",
     "standalone:sanitize": "node src/scripts/sanitize-standalone.mjs",
     "audit:prod": "pnpm audit --prod --audit-level high",
+    "test:migrations": "bash infra/operations/verify-migration-rollback.sh",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "typecheck": "tsc --noEmit",
     "dev:db": "docker compose up -d db",
