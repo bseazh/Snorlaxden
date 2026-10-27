@@ -19,6 +19,7 @@ export function HomeHeroCarousel({ displayName }: { displayName: string }) {
 
   return (
     <section className="home-showcase" aria-roledescription="carousel" aria-label="何海钊的研究与实践">
+      <p aria-live="polite" className="sr-only">第 {active + 1} 张，共 {slides.length} 张：{slides[active].label}</p>
       {slides.map((slide, index) => (
         <article aria-hidden={active !== index} className={`home-slide home-slide-${slide.kind} ${active === index ? 'is-active' : ''}`} inert={active !== index} key={slide.kind}>
           <Image alt={slide.imageAlt} className="home-slide-photo" fill priority={index === 0} sizes="100vw" src={slide.image} />
