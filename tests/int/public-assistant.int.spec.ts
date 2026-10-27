@@ -3,11 +3,13 @@ import type { Post } from '@/payload-types'
 import { answerPublicQuestion, getPublicKnowledge, PublicAssistantError } from '@/modules/public-assistant'
 import { getAuditRequestDetails } from '@/modules/audit'
 import { getPayload, type Payload } from 'payload'
+import path from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 let payload: Payload
 let draftPostId: number | string
-let publicPostId: number | string
+let publicPostId: number
+let coverMediaId: number
 const stamp = Date.now()
 const draftMarker = `PRIVATE-DRAFT-${stamp}`
 const publicMarker = `PUBLIC-POST-${stamp}`
@@ -29,10 +31,17 @@ describe('public AI assistant', () => {
     process.env.PUBLIC_AI_DAILY_LIMIT = '1'
     process.env.DEEPSEEK_API_KEY = 'test-key'
 
+    const cover = await payload.create({
+      collection: 'media', context: { skipAudit: true }, overrideAccess: true,
+      data: { alt: '公开助手测试文章封面', licenseNote: '项目自有测试图片。', purpose: 'thumbnail', visibility: 'public' },
+      filePath: path.resolve('public/images/article-covers/default-editorial.webp'),
+    })
+    coverMediaId = cover.id
+
     const publicPost = await payload.create({
       collection: 'posts',
       context: { skipAudit: true },
-      data: { _status: 'published', content: richText(publicMarker), contentType: 'essay', reviewState: 'approved', slug: `public-assistant-public-${stamp}`, summary: publicMarker, title: publicMarker },
+      data: { _status: 'published', content: richText(publicMarker), contentType: 'essay', cover: coverMediaId, reviewState: 'approved', seo: { description: publicMarker, title: publicMarker }, slug: `public-assistant-public-${stamp}`, summary: publicMarker, title: publicMarker },
       draft: false,
       overrideAccess: true,
     })
@@ -54,6 +63,7 @@ describe('public AI assistant', () => {
     for (const log of logs.docs) await payload.delete({ collection: 'audit-logs', context: { skipAudit: true }, id: log.id, overrideAccess: true })
     if (draftPostId) await payload.delete({ collection: 'posts', context: { skipAudit: true }, id: draftPostId, overrideAccess: true })
     if (publicPostId) await payload.delete({ collection: 'posts', context: { skipAudit: true }, id: publicPostId, overrideAccess: true })
+    if (coverMediaId) await payload.delete({ collection: 'media', context: { skipAudit: true }, id: coverMediaId, overrideAccess: true })
     process.env.PUBLIC_AI_ENABLED = previousEnvironment.enabled
     process.env.PUBLIC_AI_DAILY_LIMIT = previousEnvironment.limit
     process.env.DEEPSEEK_API_KEY = previousEnvironment.key

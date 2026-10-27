@@ -1,15 +1,25 @@
 import { getPayload, Payload } from 'payload'
 import config from '@/payload.config'
+import path from 'node:path'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 let payload: Payload
-let draftPostID: number | string
+let draftPostID: number
+let coverMediaID: number
 
 describe('public access controls', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
+
+    const cover = await payload.create({
+      collection: 'media',
+      data: { alt: '访问控制测试文章封面', licenseNote: '项目自有测试图片。', purpose: 'thumbnail', visibility: 'public' },
+      filePath: path.resolve('public/images/article-covers/default-editorial.webp'),
+      overrideAccess: true,
+    })
+    coverMediaID = cover.id
 
     const draftPost = await payload.create({
       collection: 'posts',
@@ -65,6 +75,7 @@ describe('public access controls', () => {
         overrideAccess: true,
       })
     }
+    if (coverMediaID) await payload.delete({ collection: 'media', id: coverMediaID, overrideAccess: true })
   })
 
   it('does not expose users through access-controlled local API', async () => {
@@ -96,8 +107,10 @@ describe('public access controls', () => {
       id: draftPostID,
       data: {
         _status: 'published',
+        cover: coverMediaID,
         publishedAt: new Date().toISOString(),
         reviewState: 'approved',
+        seo: { description: '验证公开文章发布和撤回时不会泄漏草稿。', title: '公开访问控制测试' },
       },
       draft: false,
       overrideAccess: true,
